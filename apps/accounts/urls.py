@@ -14,6 +14,7 @@ urlpatterns = [
     path('users/add/', views.user_create_view, name='user_create'),
     path('users/import/', views.user_import_view, name='user_import'),
     path('users/<int:pk>/edit/', views.user_edit_view, name='user_edit'),
+    path('users/<int:pk>/reset-password/', views.admin_reset_password_view, name='admin_reset_password'),
     path('users/<int:pk>/toggle/', views.user_toggle_active_view, name='user_toggle'),
     path('forgot-password/', views.forgot_password_view, name='forgot_password'),
     path('forgot-password/otp/', views.forgot_password_otp_view, name='forgot_password_otp'),

@@ -1,5 +1,8 @@
 from django import forms
-from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
+from django.contrib.auth.forms import UserCreationForm, AuthenticationForm, PasswordChangeForm
+from django.core.validators import RegexValidator
+name_validator = RegexValidator(regex=r'^[a-zA-ZàáãạảăắằẳẵặâấầẩẫậèéẹẻẽêềếểễệđìíĩỉịòóõọỏôốồổỗộơớờởỡợùúũụủưứừửữựỳỵỷỹýÀÁÃẠẢĂẮẰẲẴẶÂẤẦẨẪẬÈÉẸẺẼÊỀẾỂỄỆĐÌÍĨỈỊÒÓÕỌỎÔỐỒỔỖỘƠỚỜỞỠỢÙÚŨỤỦƯỨỪỬỮỰỲỴỶỸÝ\s]+$', message="Họ tên không được chứa số hoặc ký tự đặc biệt.")
+
 from .models import CustomUser
 
 
@@ -72,6 +75,8 @@ class CustomRegisterForm(forms.ModelForm):
 
 class UserCreateForm(forms.ModelForm):
     email = forms.EmailField(required=True, widget=forms.EmailInput(attrs={'class': 'form-control'}))
+    first_name = forms.CharField(validators=[name_validator], required=True, widget=forms.TextInput(attrs={'class': 'form-control'}))
+    last_name = forms.CharField(validators=[name_validator], required=True, widget=forms.TextInput(attrs={'class': 'form-control'}))
     phone_number = forms.CharField(required=True, widget=forms.TextInput(attrs={'class': 'form-control'}))
 
     class Meta:
@@ -121,6 +126,7 @@ class ProfileUpdateForm(forms.ModelForm):
     class Meta:
         model = CustomUser
         fields = ('username', 'first_name', 'last_name', 'email', 'phone_number', 'address')
+        labels = {'username': 'Mã SV/GV'}
         widgets = {
             'username': forms.TextInput(attrs={'class': 'form-control'}),
             'first_name': forms.TextInput(attrs={'class': 'form-control'}),
@@ -137,6 +143,7 @@ class UserManageForm(forms.ModelForm):
     class Meta:
         model = CustomUser
         fields = ('username', 'email', 'role', 'is_active', 'phone_number', 'address')
+        labels = {'username': 'Mã SV/GV'}
         widgets = {
             'username': forms.TextInput(attrs={'class': 'form-control'}),
             'email': forms.EmailInput(attrs={'class': 'form-control'}),
@@ -145,3 +152,11 @@ class UserManageForm(forms.ModelForm):
             'phone_number': forms.TextInput(attrs={'class': 'form-control'}),
             'address': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
         }
+
+class CustomPasswordChangeForm(PasswordChangeForm):
+    def clean(self):
+        cleaned_data = super().clean()
+        new_password1 = cleaned_data.get('new_password1')
+        if new_password1 and self.user.check_password(new_password1):
+            raise forms.ValidationError("Mật khẩu mới không được trùng với mật khẩu cũ.")
+        return cleaned_data

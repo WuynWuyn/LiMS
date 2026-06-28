@@ -9,26 +9,31 @@
             <div class="card-body">
                 <form method="post" enctype="multipart/form-data">
                     {% csrf_token %}
+                    {% if form.errors %}
+                        <div class="alert alert-danger">
+                            Vui lòng kiểm tra lại thông tin nhập. {{ form.errors }}
+                        </div>
+                    {% endif %}
                     <div class="row">
                         <div class="col-md-8 mb-3"><label class="form-label">Tên sách <span class="text-danger">*</span></label>{{ form.title }}</div>
                         <div class="col-md-4 mb-3"><label class="form-label">ISBN</label>{{ form.isbn }}</div>
                     </div>
                     <div class="row">
                         <div class="col-md-4 mb-3"><label class="form-label">Thể loại</label>{{ form.category }}</div>
-                        <div class="col-md-4 mb-3"><label class="form-label">Nhà xuất bản</label>{{ form.publisher_name }}</div>
+                        <div class="col-md-4 mb-3"><label class="form-label">Nhà xuất bản <span class="text-danger">*</span></label>{{ form.publisher_name }}</div>
                         <div class="col-md-4 mb-3"><label class="form-label">Năm xuất bản</label>{{ form.publication_year }}</div>
                     </div>
-                    <div class="mb-3"><label class="form-label">Tác giả (Cách nhau bởi dấu phẩy)</label>{{ form.author_names }}</div>
+                    <div class="mb-3"><label class="form-label">Tác giả (Cách nhau bởi dấu phẩy) <span class="text-danger">*</span></label>{{ form.authors }}</div>
                     <div class="mb-3"><label class="form-label">Mô tả</label>{{ form.description }}</div>
                     <div class="row">
                         <div class="col-md-6 mb-3"><label class="form-label">Ảnh bìa</label>{{ form.cover_image }}</div>
 
                     </div>
                     <div class="row">
-                        <div class="col-md-3 mb-3"><label class="form-label">Giá bìa</label>{{ form.price }}</div>
-                        <div class="col-md-3 mb-3"><label class="form-label">Tổng số bản</label>{{ form.total_copies }}</div>
-                        <div class="col-md-3 mb-3"><label class="form-label">Số bản có sẵn</label>{{ form.available_copies }}</div>
-                        <div class="col-md-3 mb-3"><label class="form-label">Trạng thái</label>{{ form.status }}</div>
+                        <div class="col-md-3 mb-3"><label class="form-label">Giá bìa <span class="text-danger">*</span></label>{{ form.price }}</div>
+                        <div class="col-md-3 mb-3"><label class="form-label">Tổng số bản <span class="text-danger">*</span></label>{{ form.total_copies }}</div>
+                        <div class="col-md-3 mb-3"><label class="form-label">Số bản có sẵn <span class="text-danger">*</span></label>{{ form.available_copies }}</div>
+                        <div class="col-md-3 mb-3"><label class="form-label">Trạng thái <span class="text-danger">*</span></label>{{ form.status }}</div>
                     </div>
                     <div class="d-flex gap-2 mt-2">
                         <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg me-1"></i> Lưu</button>

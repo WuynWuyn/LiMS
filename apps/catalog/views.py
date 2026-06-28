@@ -170,8 +170,11 @@ def book_delete_view(request, pk):
         return redirect('home')
     if request.method == 'POST':
         book = get_object_or_404(Book, pk=pk)
-        book.delete()
-        messages.success(request, 'Đã xóa sách thành công.')
+        if book.borrow_records.filter(status__in=['borrowed', 'overdue']).exists():
+            messages.error(request, 'Không thể xóa sách này vì đang có người mượn hoặc chưa trả.')
+        else:
+            book.delete()
+            messages.success(request, 'Đã xóa sách thành công.')
     return redirect('catalog:book_manage')
 
 
@@ -215,6 +218,9 @@ def category_delete_view(request, pk):
         return redirect('home')
     if request.method == 'POST':
         category = get_object_or_404(Category, pk=pk)
-        category.delete()
-        messages.success(request, 'Đã xóa thể loại.')
+        if category.books.exists():
+            messages.error(request, 'Không thể xóa danh mục này vì vẫn còn sách thuộc danh mục.')
+        else:
+            category.delete()
+            messages.success(request, 'Đã xóa thể loại thành công.')
     return redirect('catalog:category_manage')

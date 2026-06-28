@@ -45,6 +45,8 @@
         <a href="{% url 'circulation:manage_borrows' %}" class="nav-link"><i class="bi bi-arrow-left-right"></i> Quản lý mượn/trả</a>
         <a href="{% url 'circulation:manage_reservations' %}" class="nav-link"><i class="bi bi-list-ul"></i> Quản lý hàng đợi</a>
         <a href="{% url 'proposals:review_proposals' %}" class="nav-link"><i class="bi bi-check-circle"></i> Duyệt đề xuất</a>
+        <a href="{% url 'catalog:book_manage' %}" class="nav-link"><i class="bi bi-book-half"></i> Quản lý sách</a>
+        <a href="{% url 'catalog:category_manage' %}" class="nav-link"><i class="bi bi-tags"></i> Quản lý thể loại</a>
         {% endif %}
 
         {% if user.role == 'admin' or user.is_superuser %}

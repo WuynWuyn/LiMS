@@ -48,6 +48,18 @@ class BookForm(forms.ModelForm):
             if self.instance.publisher:
                 self.initial['publisher_name'] = self.instance.publisher.name
 
+    
+    def clean_title(self):
+        title = self.cleaned_data.get('title')
+        if title:
+            qs = Book.objects.filter(title__iexact=title)
+            if self.instance.pk:
+                qs = qs.exclude(pk=self.instance.pk)
+            if qs.exists():
+                from django.core.exceptions import ValidationError
+                raise ValidationError(f"Sách có tên '{title}' đã tồn tại trong hệ thống.")
+        return title
+
     def clean_isbn(self):
         isbn = self.cleaned_data.get('isbn')
         if isbn:

@@ -80,6 +80,7 @@
                             <tr>
                                 <th class="ps-4 fw-semibold border-0 py-3">Tựa sách</th>
                                 <th class="fw-semibold border-0 py-3">Ngày trả</th>
+                                <th class="fw-semibold border-0 py-3">Đánh giá</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -87,10 +88,15 @@
                             <tr>
                                 <td class="ps-4 fw-medium py-3 text-dark">{{ record.book.title }}</td>
                                 <td class="text-muted py-3">{{ record.return_date|date:"d/m/Y H:i" }}</td>
+                                <td class="py-3">
+                                    <a href="{% url 'reviews:review_create' record.book.pk %}" class="btn btn-sm btn-outline-primary rounded-pill">
+                                        <i class="bi bi-star"></i> Đánh giá
+                                    </a>
+                                </td>
                             </tr>
                             {% empty %}
                             <tr>
-                                <td colspan="2" class="text-center py-5 text-muted bg-light bg-opacity-50">
+                                <td colspan="3" class="text-center py-5 text-muted bg-light bg-opacity-50">
                                     <i class="bi bi-inbox fs-1 d-block mb-3 text-secondary opacity-50"></i>
                                     Chưa có lịch sử trả sách.
                                 </td>

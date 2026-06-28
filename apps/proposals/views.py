@@ -18,6 +18,11 @@ def proposal_list_view(request):
 @login_required
 def proposal_create_view(request):
     if request.method == 'POST':
+        pending_count = BookProposal.objects.filter(user=request.user, status='pending').count()
+        if pending_count >= 3:
+            messages.error(request, 'Bạn đã đạt giới hạn 3 đề xuất đang chờ duyệt. Vui lòng chờ phản hồi trước khi gửi thêm.')
+            return redirect('proposals:proposal_list')
+            
         form = ProposalCreateForm(request.POST)
         if form.is_valid():
             proposal = form.save(commit=False)

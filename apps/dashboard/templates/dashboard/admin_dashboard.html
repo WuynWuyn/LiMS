@@ -6,67 +6,75 @@
 {% block content %}
 <div class="row g-4 mb-4">
     <div class="col-12 col-sm-6 col-xl-3">
-        <div class="card stat-card shadow-sm h-100 border-0 bg-primary text-white" style="border-radius: 1rem;">
-            <div class="card-body p-4">
-                <div class="d-flex justify-content-between align-items-center">
-                    <div>
-                        <h6 class="text-white-50 mb-1 fw-semibold text-uppercase" style="letter-spacing: 0.5px;">Tổng số đầu sách</h6>
-                        <h2 class="mb-0 display-5 fw-bold">{{ total_books }}</h2>
-                    </div>
-                    <div class="stat-icon bg-white bg-opacity-25 rounded-circle d-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
-                        <i class="bi bi-book fs-2"></i>
+        <a href="{% url 'catalog:book_list' %}" class="text-decoration-none">
+            <div class="card stat-card shadow-sm h-100 border-0 bg-primary text-white" style="border-radius: 1rem;">
+                <div class="card-body p-4">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-white-50 mb-1 fw-semibold text-uppercase" style="letter-spacing: 0.5px;">Tổng số đầu sách</h6>
+                            <h2 class="mb-0 display-5 fw-bold">{{ total_books }}</h2>
+                        </div>
+                        <div class="stat-icon bg-white bg-opacity-25 rounded-circle d-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
+                            <i class="bi bi-book fs-2"></i>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
+        </a>
     </div>
     
     <div class="col-12 col-sm-6 col-xl-3">
-        <div class="card stat-card shadow-sm h-100 border-0 bg-success text-white" style="border-radius: 1rem;">
-            <div class="card-body p-4">
-                <div class="d-flex justify-content-between align-items-center">
-                    <div>
-                        <h6 class="text-white-50 mb-1 fw-semibold text-uppercase" style="letter-spacing: 0.5px;">Tổng User</h6>
-                        <h2 class="mb-0 display-5 fw-bold">{{ total_users }}</h2>
-                    </div>
-                    <div class="stat-icon bg-white bg-opacity-25 rounded-circle d-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
-                        <i class="bi bi-people fs-2"></i>
+        <a href="{% url 'accounts:user_list' %}" class="text-decoration-none">
+            <div class="card stat-card shadow-sm h-100 border-0 bg-success text-white" style="border-radius: 1rem;">
+                <div class="card-body p-4">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-white-50 mb-1 fw-semibold text-uppercase" style="letter-spacing: 0.5px;">Tổng User</h6>
+                            <h2 class="mb-0 display-5 fw-bold">{{ total_users }}</h2>
+                        </div>
+                        <div class="stat-icon bg-white bg-opacity-25 rounded-circle d-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
+                            <i class="bi bi-people fs-2"></i>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
+        </a>
     </div>
 
     <div class="col-12 col-sm-6 col-xl-3">
-        <div class="card stat-card shadow-sm h-100 border-0 bg-warning text-dark" style="border-radius: 1rem;">
-            <div class="card-body p-4">
-                <div class="d-flex justify-content-between align-items-center">
-                    <div>
-                        <h6 class="text-dark-50 mb-1 fw-semibold text-uppercase" style="letter-spacing: 0.5px; color: rgba(0,0,0,0.6);">Sách đang mượn</h6>
-                        <h2 class="mb-0 display-5 fw-bold">{{ total_borrowed }}</h2>
-                    </div>
-                    <div class="stat-icon bg-dark bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
-                        <i class="bi bi-bookmark-check fs-2 text-dark"></i>
+        <a href="{% url 'circulation:manage_borrows' %}?status=borrowed" class="text-decoration-none">
+            <div class="card stat-card shadow-sm h-100 border-0 bg-warning text-dark" style="border-radius: 1rem;">
+                <div class="card-body p-4">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-dark-50 mb-1 fw-semibold text-uppercase" style="letter-spacing: 0.5px; color: rgba(0,0,0,0.6);">Sách đang mượn</h6>
+                            <h2 class="mb-0 display-5 fw-bold">{{ total_borrowed }}</h2>
+                        </div>
+                        <div class="stat-icon bg-dark bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
+                            <i class="bi bi-bookmark-check fs-2 text-dark"></i>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
+        </a>
     </div>
 
     <div class="col-12 col-sm-6 col-xl-3">
-        <div class="card stat-card shadow-sm h-100 border-0 bg-danger text-white" style="border-radius: 1rem;">
-            <div class="card-body p-4">
-                <div class="d-flex justify-content-between align-items-center">
-                    <div>
-                        <h6 class="text-white-50 mb-1 fw-semibold text-uppercase" style="letter-spacing: 0.5px;">Mượn quá hạn</h6>
-                        <h2 class="mb-0 display-5 fw-bold">{{ total_overdue }}</h2>
-                    </div>
-                    <div class="stat-icon bg-white bg-opacity-25 rounded-circle d-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
-                        <i class="bi bi-exclamation-triangle fs-2"></i>
+        <a href="{% url 'circulation:manage_borrows' %}?status=overdue" class="text-decoration-none">
+            <div class="card stat-card shadow-sm h-100 border-0 bg-danger text-white" style="border-radius: 1rem;">
+                <div class="card-body p-4">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-white-50 mb-1 fw-semibold text-uppercase" style="letter-spacing: 0.5px;">Mượn quá hạn</h6>
+                            <h2 class="mb-0 display-5 fw-bold">{{ total_overdue }}</h2>
+                        </div>
+                        <div class="stat-icon bg-white bg-opacity-25 rounded-circle d-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
+                            <i class="bi bi-exclamation-triangle fs-2"></i>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
+        </a>
     </div>
 </div>
 
@@ -123,4 +131,87 @@
         </div>
     </div>
 </div>
+
+<div class="row g-4">
+    <div class="col-12 col-md-6">
+        <div class="card shadow-sm border-0 h-100" style="border-radius: 1rem;">
+            <div class="card-header bg-white pt-3 border-0">
+                <h5 class="fw-bold mb-0">Thống kê Sách theo Danh mục</h5>
+            </div>
+            <div class="card-body p-4">
+                <canvas id="categoryChart" height="250"></canvas>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-12 col-md-6">
+        <div class="card shadow-sm border-0 h-100" style="border-radius: 1rem;">
+            <div class="card-header bg-white pt-3 border-0">
+                <h5 class="fw-bold mb-0">Biểu đồ Sinh viên Mượn sách (7 ngày)</h5>
+            </div>
+            <div class="card-body p-4">
+                <canvas id="borrowChart" height="250"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    var ctxCategory = document.getElementById('categoryChart').getContext('2d');
+    var categoryChart = new Chart(ctxCategory, {
+        type: 'pie',
+        data: {
+            labels: {{ category_labels|safe }},
+            datasets: [{
+                data: {{ category_counts|safe }},
+                backgroundColor: ['#4e73df', '#1cc88a', '#36b9cc', '#f6c23e', '#e74a3b', '#858796'],
+                hoverBorderColor: "rgba(234, 236, 244, 1)",
+            }],
+        },
+        options: {
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { position: 'bottom' }
+            }
+        }
+    });
+
+    var ctxBorrow = document.getElementById('borrowChart').getContext('2d');
+    var borrowChart = new Chart(ctxBorrow, {
+        type: 'line',
+        data: {
+            labels: {{ borrow_labels|safe }},
+            datasets: [{
+                label: "Số lượt mượn",
+                lineTension: 0.3,
+                backgroundColor: "rgba(78, 115, 223, 0.05)",
+                borderColor: "rgba(78, 115, 223, 1)",
+                pointRadius: 3,
+                pointBackgroundColor: "rgba(78, 115, 223, 1)",
+                pointBorderColor: "rgba(78, 115, 223, 1)",
+                pointHoverRadius: 3,
+                pointHoverBackgroundColor: "rgba(78, 115, 223, 1)",
+                pointHoverBorderColor: "rgba(78, 115, 223, 1)",
+                pointHitRadius: 10,
+                pointBorderWidth: 2,
+                data: {{ borrows_by_date|safe }},
+            }],
+        },
+        options: {
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: { stepSize: 1 }
+                }
+            },
+            plugins: {
+                legend: { display: false }
+            }
+        }
+    });
+});
+</script>
 {% endblock %}

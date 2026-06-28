@@ -8,7 +8,7 @@ from django.contrib import messages
 from django.core.paginator import Paginator
 from django.db.models import Q
 
-from .forms import CustomLoginForm, CustomRegisterForm, ProfileUpdateForm, UserManageForm, UserCreateForm, UserExcelImportForm
+from .forms import CustomLoginForm, CustomRegisterForm, ProfileUpdateForm, UserManageForm, UserCreateForm, UserExcelImportForm, CustomPasswordChangeForm
 from .models import CustomUser
 import openpyxl
 
@@ -110,6 +110,7 @@ def profile_view(request):
 
 
 class CustomPasswordChangeView(PasswordChangeView):
+    form_class = CustomPasswordChangeForm
     template_name = 'accounts/password_change.html'
     success_url = reverse_lazy('accounts:profile')
 
@@ -123,13 +124,25 @@ def user_list_view(request):
     if request.user.role != 'admin':
         messages.error(request, 'Bạn không có quyền truy cập.')
         return redirect('home')
-    q = request.GET.get('q', '')
+    from django.db.models import Count
+    q = request.GET.get('q', '').strip()
+    role = request.GET.get('role', '')
+    status = request.GET.get('status', '')
+    
     users = CustomUser.objects.exclude(Q(role='admin') | Q(is_superuser=True))
     if q:
         users = users.filter(Q(username__icontains=q) | Q(email__icontains=q))
+    if role:
+        users = users.filter(role=role)
+    if status == 'active':
+        users = users.filter(is_active=True)
+    elif status == 'inactive':
+        users = users.filter(is_active=False)
+        
+    users = users.annotate(borrowed_books_count=Count('borrowrecord', filter=Q(borrowrecord__status='borrowed')))
     paginator = Paginator(users.order_by('-created_at'), 20)
     page = paginator.get_page(request.GET.get('page'))
-    return render(request, 'accounts/user_list.html', {'page_obj': page, 'q': q})
+    return render(request, 'accounts/user_list.html', {'page_obj': page, 'q': q, 'role': role, 'status': status})
 
 
 @login_required
@@ -444,3 +457,29 @@ def reset_password_view(request):
     else:
         form = ResetPasswordForm()
     return render(request, 'accounts/reset_password.html', {'form': form})
+from django.shortcuts import get_object_or_404, redirect
+from django.contrib import messages
+from django.contrib.auth.decorators import login_required
+from .models import CustomUser
+
+@login_required
+def admin_reset_password_view(request, pk):
+    if request.user.role != 'admin':
+        messages.error(request, 'Bạn không có quyền truy cập.')
+        return redirect('home')
+        
+    user_obj = get_object_or_404(CustomUser, pk=pk)
+    if user_obj.role == 'admin' or user_obj.is_superuser:
+        messages.error(request, 'Không thể thao tác trên tài khoản Quản trị viên.')
+        return redirect('accounts:user_list')
+        
+    if request.method == 'POST':
+        # Reset to default
+        new_password = user_obj.username + '@123'
+        user_obj.set_password(new_password)
+        user_obj.failed_login_attempts = 0
+        user_obj.locked_until = None
+        user_obj.save()
+        messages.success(request, f'Đã đặt lại mật khẩu cho {user_obj.username} thành: {new_password}')
+        
+    return redirect('accounts:user_edit', pk=pk)

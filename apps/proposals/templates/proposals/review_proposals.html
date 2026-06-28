@@ -37,13 +37,38 @@
                         <form method="post" action="{% url 'proposals:review_proposal_action' p.pk %}" class="d-inline">
                             {% csrf_token %}
                             <input type="hidden" name="action" value="approved">
-                            <button class="btn btn-sm btn-success"><i class="bi bi-check-lg"></i></button>
+                            <button class="btn btn-sm btn-success" data-bs-toggle="tooltip" title="Duyệt"><i class="bi bi-check-lg"></i></button>
                         </form>
-                        <form method="post" action="{% url 'proposals:review_proposal_action' p.pk %}" class="d-inline">
-                            {% csrf_token %}
-                            <input type="hidden" name="action" value="rejected">
-                            <button class="btn btn-sm btn-danger"><i class="bi bi-x-lg"></i></button>
-                        </form>
+                        <button type="button" class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#rejectModal{{ p.pk }}" title="Từ chối">
+                            <i class="bi bi-x-lg"></i>
+                        </button>
+                        
+                        <!-- Reject Modal -->
+                        <div class="modal fade" id="rejectModal{{ p.pk }}" tabindex="-1" aria-hidden="true">
+                          <div class="modal-dialog">
+                            <div class="modal-content">
+                              <form method="post" action="{% url 'proposals:review_proposal_action' p.pk %}">
+                                  {% csrf_token %}
+                                  <input type="hidden" name="action" value="rejected">
+                                  <div class="modal-header">
+                                    <h5 class="modal-title">Từ chối đề xuất</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                  </div>
+                                  <div class="modal-body">
+                                    <p>Bạn có chắc chắn muốn từ chối đề xuất sách <strong>{{ p.title }}</strong> không?</p>
+                                    <div class="mb-3">
+                                        <label class="form-label">Lý do từ chối (Tùy chọn)</label>
+                                        <textarea name="admin_notes" class="form-control" rows="3" placeholder="Nhập lý do để gửi email cho độc giả..."></textarea>
+                                    </div>
+                                  </div>
+                                  <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                                    <button type="submit" class="btn btn-danger">Từ chối</button>
+                                  </div>
+                              </form>
+                            </div>
+                          </div>
+                        </div>
                         {% else %}-{% endif %}
                     </td>
                 </tr>

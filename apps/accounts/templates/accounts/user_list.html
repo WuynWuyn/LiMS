@@ -10,7 +10,18 @@
             <a href="{% url 'accounts:user_import' %}" class="btn btn-sm btn-success"><i class="bi bi-file-earmark-excel me-1"></i> Import</a>
             <a href="{% url 'accounts:user_create' %}" class="btn btn-sm btn-primary"><i class="bi bi-plus-lg me-1"></i> Thêm mới</a>
         </div>
-        <form method="get" class="d-flex gap-2" style="max-width:300px;">
+        <form method="get" class="d-flex gap-2">
+            <select name="role" class="form-select form-select-sm">
+                <option value="">Tất cả vai trò</option>
+                <option value="reader" {% if role == 'reader' %}selected{% endif %}>Bạn đọc</option>
+                <option value="lecturer" {% if role == 'lecturer' %}selected{% endif %}>Giảng viên</option>
+                <option value="librarian" {% if role == 'librarian' %}selected{% endif %}>Thủ thư</option>
+            </select>
+            <select name="status" class="form-select form-select-sm">
+                <option value="">Tất cả trạng thái</option>
+                <option value="active" {% if status == 'active' %}selected{% endif %}>Hoạt động</option>
+                <option value="inactive" {% if status == 'inactive' %}selected{% endif %}>Vô hiệu</option>
+            </select>
             <input type="text" name="q" class="form-control form-control-sm" placeholder="Tìm kiếm..." value="{{ q }}">
             <button class="btn btn-sm btn-primary"><i class="bi bi-search"></i></button>
         </form>
@@ -20,7 +31,7 @@
             <table class="table table-hover mb-0">
                 <thead>
                     <tr>
-                        <th>#</th><th>Username</th><th>Email</th><th>Vai trò</th><th>Trạng thái</th><th>Ngày tạo</th><th>Hành động</th>
+                        <th>#</th><th>Mã SV/GV</th><th>Email</th><th>Vai trò</th><th>Trạng thái</th><th>Số sách đang mượn</th><th>Ngày tạo</th><th>Hành động</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -34,8 +45,10 @@
                             {% if u.is_active %}<span class="badge badge-available">Hoạt động</span>
                             {% else %}<span class="badge badge-maintenance">Vô hiệu</span>{% endif %}
                         </td>
+                        <td>{{ u.borrowed_books_count }}</td>
                         <td>{{ u.created_at|date:"d/m/Y" }}</td>
                         <td>
+                            <a href="{% url 'dashboard:user_history_admin' u.pk %}" class="btn btn-sm btn-outline-info" data-bs-toggle="tooltip" title="Xem lịch sử"><i class="bi bi-clock-history"></i></a>
                             <a href="{% url 'accounts:user_edit' u.pk %}" class="btn btn-sm btn-outline-primary" data-bs-toggle="tooltip" title="Chỉnh sửa"><i class="bi bi-pencil"></i></a>
                             <form method="post" action="{% url 'accounts:user_toggle' u.pk %}" class="d-inline">
                                 {% csrf_token %}
@@ -57,19 +70,19 @@
 <nav class="mt-3 d-flex justify-content-center">
     <ul class="pagination">
         {% if page_obj.has_previous %}
-        <li class="page-item"><a class="page-link" href="?page=1&q={{ q }}">«</a></li>
-        <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}&q={{ q }}">‹</a></li>
+        <li class="page-item"><a class="page-link" href="?page=1&q={{ q }}&role={{ role }}&status={{ status }}">«</a></li>
+        <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}&q={{ q }}&role={{ role }}&status={{ status }}">‹</a></li>
         {% endif %}
         {% for num in page_obj.paginator.page_range %}
             {% if num == page_obj.number %}
             <li class="page-item active"><span class="page-link">{{ num }}</span></li>
             {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
-            <li class="page-item"><a class="page-link" href="?page={{ num }}&q={{ q }}">{{ num }}</a></li>
+            <li class="page-item"><a class="page-link" href="?page={{ num }}&q={{ q }}&role={{ role }}&status={{ status }}">{{ num }}</a></li>
             {% endif %}
         {% endfor %}
         {% if page_obj.has_next %}
-        <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}&q={{ q }}">›</a></li>
-        <li class="page-item"><a class="page-link" href="?page={{ page_obj.paginator.num_pages }}&q={{ q }}">»</a></li>
+        <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}&q={{ q }}&role={{ role }}&status={{ status }}">›</a></li>
+        <li class="page-item"><a class="page-link" href="?page={{ page_obj.paginator.num_pages }}&q={{ q }}&role={{ role }}&status={{ status }}">»</a></li>
         {% endif %}
     </ul>
 </nav>
