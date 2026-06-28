@@ -302,12 +302,31 @@ def resolve_violation_view(request, pk):
         messages.error(request, 'Bạn không có quyền.')
         return redirect('home')
     record = get_object_or_404(BorrowRecord, pk=pk)
-    if record.status in ['overdue', 'lost']:
-        record.status = 'returned'
-        if not record.return_date:
-            record.return_date = timezone.now()
-        record.notes = (record.notes or '') + ' [Đã hoàn tất bồi thường/xử lý vi phạm]'
-        record.save()
-        messages.success(request, f'Đã gỡ vi phạm cho {record.user.username} (sách "{record.book.title}"). Quyền mượn sách đã được khôi phục nếu không còn vi phạm khác.')
+    if request.method == 'POST':
+        resolution_type = request.POST.get('resolution_type')
+        resolution_notes = request.POST.get('resolution_notes', '')
+        
+        if record.status in ['overdue', 'lost']:
+            record.status = 'returned'
+            if not record.return_date:
+                record.return_date = timezone.now()
+                
+            resolution_text = ""
+            if resolution_type == 'returned_late':
+                resolution_text = "Đã trả sách trễ hạn."
+            elif resolution_type == 'replaced_book':
+                resolution_text = "Đã đền bù sách mới cùng ISBN."
+                # Tăng lại số lượng vì sách mới đã được bổ sung
+                record.book.total_copies += 1
+                record.book.available_copies += 1
+                record.book.save()
+            elif resolution_type == 'paid_150':
+                resolution_text = "Đã thanh toán 150% giá bìa."
+                
+            final_note = f"[{resolution_text}] {resolution_notes}".strip()
+            record.notes = ((record.notes or '') + f'\n{final_note}').strip()
+            record.save()
+            
+            messages.success(request, f'Đã gỡ vi phạm cho {record.user.username} (sách "{record.book.title}"). Quyền mượn sách sẽ được khôi phục nếu không còn vi phạm khác.')
     return redirect('circulation:manage_borrows')
 

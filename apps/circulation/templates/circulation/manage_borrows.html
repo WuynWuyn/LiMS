@@ -58,10 +58,55 @@
                         </form>
                         {% endif %}
                         {% if record.status == 'overdue' or record.status == 'lost' %}
-                        <form method="post" action="{% url 'circulation:resolve_violation' record.pk %}" class="d-inline">
-                            {% csrf_token %}
-                            <button class="btn btn-sm btn-success" data-bs-toggle="tooltip" title="Gỡ vi phạm"><i class="bi bi-check-circle"></i> Gỡ vi phạm</button>
-                        </form>
+                        <button type="button" class="btn btn-sm btn-success" data-bs-toggle="modal" data-bs-target="#resolveModal{{ record.pk }}" title="Xử lý Vi phạm">
+                            <i class="bi bi-check-circle"></i> Thanh toán / Bồi thường
+                        </button>
+                        
+                        <!-- Modal Xử lý Vi phạm -->
+                        <div class="modal fade" id="resolveModal{{ record.pk }}" tabindex="-1" aria-labelledby="resolveModalLabel{{ record.pk }}" aria-hidden="true">
+                          <div class="modal-dialog">
+                            <div class="modal-content text-start">
+                              <form method="post" action="{% url 'circulation:resolve_violation' record.pk %}">
+                                {% csrf_token %}
+                                <div class="modal-header">
+                                  <h5 class="modal-title" id="resolveModalLabel{{ record.pk }}">Xử lý Vi phạm / Bồi thường</h5>
+                                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body">
+                                  <p><strong>Người mượn:</strong> {{ record.user.username }}</p>
+                                  <p><strong>Sách:</strong> {{ record.book.title }}</p>
+                                  <p><strong>Loại vi phạm:</strong> 
+                                    {% if record.status == 'overdue' %}
+                                        <span class="text-danger">Quá hạn trả sách</span>
+                                    {% elif record.status == 'lost' %}
+                                        <span class="text-dark">Báo mất sách</span>
+                                    {% endif %}
+                                  </p>
+                                  
+                                  <div class="mb-3">
+                                      <label class="form-label">Hình thức xử lý (Theo SRS BR-13 & BR-18):</label>
+                                      <select class="form-select" name="resolution_type" required>
+                                          {% if record.status == 'overdue' %}
+                                          <option value="returned_late">Đã trả sách (Mở khóa tín nhiệm)</option>
+                                          {% elif record.status == 'lost' %}
+                                          <option value="replaced_book">Đền bù sách mới (Cùng ISBN)</option>
+                                          <option value="paid_150">Thanh toán 150% giá bìa ({{ record.book.price|add:record.book.price|add:record.book.price|default:0 }} đ)</option>
+                                          {% endif %}
+                                      </select>
+                                  </div>
+                                  <div class="mb-3">
+                                      <label class="form-label">Ghi chú thêm:</label>
+                                      <textarea class="form-control" name="resolution_notes" rows="2"></textarea>
+                                  </div>
+                                </div>
+                                <div class="modal-footer">
+                                  <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                                  <button type="submit" class="btn btn-success">Xác nhận hoàn tất</button>
+                                </div>
+                              </form>
+                            </div>
+                          </div>
+                        </div>
                         {% endif %}
                         {% if record.status != 'pending' and record.status != 'borrowed' and record.status != 'overdue' and record.status != 'lost' %}
                         <span class="text-muted">-</span>
