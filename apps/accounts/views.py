@@ -139,7 +139,7 @@ def user_list_view(request):
     elif status == 'inactive':
         users = users.filter(is_active=False)
         
-    users = users.annotate(borrowed_books_count=Count('borrowrecord', filter=Q(borrowrecord__status='borrowed')))
+    users = users.annotate(borrowed_books_count=Count('borrow_records', filter=Q(borrow_records__status='borrowed')))
     paginator = Paginator(users.order_by('-created_at'), 20)
     page = paginator.get_page(request.GET.get('page'))
     return render(request, 'accounts/user_list.html', {'page_obj': page, 'q': q, 'role': role, 'status': status})
