@@ -24,7 +24,7 @@ def admin_dashboard_view(request):
     # Dữ liệu biểu đồ sách theo danh mục
     from apps.catalog.models import Category
     from django.db.models import Count
-    categories_data = Category.objects.annotate(book_count=Count('book')).values('name', 'book_count')
+    categories_data = Category.objects.annotate(book_count=Count('books')).values('name', 'book_count')
     category_labels = [c['name'] for c in categories_data]
     category_counts = [c['book_count'] for c in categories_data]
     
