@@ -75,6 +75,9 @@
 </nav>
 {% endif %}
 
+{% endblock %}
+
+{% block modals %}
 <!-- Reject Modals -->
 {% for p in page_obj %}
 {% if p.status == 'pending' %}
@@ -105,5 +108,4 @@
 </div>
 {% endif %}
 {% endfor %}
-
 {% endblock %}

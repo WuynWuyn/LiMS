@@ -97,6 +97,9 @@
 </nav>
 {% endif %}
 
+{% endblock %}
+
+{% block modals %}
 <!-- Resolve Modals -->
 {% for record in page_obj %}
 {% if record.status == 'overdue' or record.status == 'lost' %}
@@ -146,5 +149,4 @@
 </div>
 {% endif %}
 {% endfor %}
-
 {% endblock %}

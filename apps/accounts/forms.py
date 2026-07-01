@@ -98,10 +98,10 @@ class ForgotPasswordForm(forms.Form):
 class ResetPasswordForm(forms.Form):
     password = forms.CharField(label='Mật khẩu mới', widget=forms.PasswordInput(attrs={
         'class': 'form-control', 'placeholder': 'Nhập mật khẩu mới',
-    }))
+    }), strip=True)
     confirm_password = forms.CharField(label='Xác nhận mật khẩu', widget=forms.PasswordInput(attrs={
         'class': 'form-control', 'placeholder': 'Nhập lại mật khẩu mới',
-    }))
+    }), strip=True)
 
     def clean(self):
         cleaned_data = super().clean()
@@ -154,6 +154,12 @@ class UserManageForm(forms.ModelForm):
         }
 
 class CustomPasswordChangeForm(PasswordChangeForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['old_password'].strip = True
+        self.fields['new_password1'].strip = True
+        self.fields['new_password2'].strip = True
+
     def clean(self):
         cleaned_data = super().clean()
         new_password1 = cleaned_data.get('new_password1')
