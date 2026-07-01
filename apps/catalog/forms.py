@@ -54,9 +54,9 @@ class BookForm(forms.ModelForm):
         title = self.cleaned_data.get('title')
         if title:
             import re
-            if re.search(r'[<>{}\[\]\\|~`@$%^*]', title):
+            if re.search(r'[<>{}\[\]\\|~`@$%^*;=]', title) or '--' in title:
                 from django.core.exceptions import ValidationError
-                raise ValidationError("Tên sách không được chứa ký tự đặc biệt.")
+                raise ValidationError("Tên sách không được chứa ký tự đặc biệt hoặc mã độc hại.")
             qs = Book.objects.filter(title__iexact=title)
             if self.instance.pk:
                 qs = qs.exclude(pk=self.instance.pk)
@@ -69,18 +69,18 @@ class BookForm(forms.ModelForm):
         authors = self.cleaned_data.get('authors')
         if authors:
             import re
-            if re.search(r'[<>{}\[\]\\|~`@$%^*]', authors):
+            if re.search(r'[<>{}\[\]\\|~`@$%^*;=]', authors) or '--' in authors:
                 from django.core.exceptions import ValidationError
-                raise ValidationError("Tên tác giả không được chứa ký tự đặc biệt.")
+                raise ValidationError("Tên tác giả không được chứa ký tự đặc biệt hoặc mã độc hại.")
         return authors
 
     def clean_publisher_name(self):
         publisher_name = self.cleaned_data.get('publisher_name')
         if publisher_name:
             import re
-            if re.search(r'[<>{}\[\]\\|~`@$%^*]', publisher_name):
+            if re.search(r'[<>{}\[\]\\|~`@$%^*;=]', publisher_name) or '--' in publisher_name:
                 from django.core.exceptions import ValidationError
-                raise ValidationError("Tên nhà xuất bản không được chứa ký tự đặc biệt.")
+                raise ValidationError("Tên nhà xuất bản không được chứa ký tự đặc biệt hoặc mã độc hại.")
         return publisher_name
         
     def clean_description(self):
@@ -93,6 +93,10 @@ class BookForm(forms.ModelForm):
     def clean_isbn(self):
         isbn = self.cleaned_data.get('isbn')
         if isbn:
+            import re
+            if not re.match(r'^[\d\-]+$', isbn):
+                from django.core.exceptions import ValidationError
+                raise ValidationError("Mã ISBN chỉ được chứa chữ số và dấu gạch ngang (-).")
             from django.core.exceptions import ValidationError
             qs = Book.objects.filter(isbn=isbn)
             if self.instance.pk:
@@ -132,9 +136,9 @@ class CategoryForm(forms.ModelForm):
         name = self.cleaned_data.get('name')
         if name:
             import re
-            if re.search(r'[<>{}\[\]\\|~`@$%^*]', name):
+            if re.search(r'[<>{}\[\]\\|~`@$%^*;=]', name) or '--' in name:
                 from django.core.exceptions import ValidationError
-                raise ValidationError("Tên thể loại không được chứa ký tự đặc biệt.")
+                raise ValidationError("Tên thể loại không được chứa ký tự đặc biệt hoặc mã độc hại.")
         return name
 
     def clean_description(self):
