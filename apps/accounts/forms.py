@@ -10,17 +10,18 @@ from django.utils import timezone
 import datetime
 
 class CustomLoginForm(AuthenticationForm):
-    username = forms.CharField(label='Email', widget=forms.TextInput(attrs={
-        'class': 'form-control form-control-lg', 'placeholder': 'Email', 'autofocus': True,
+    username = forms.CharField(label='Email / Tên đăng nhập', widget=forms.TextInput(attrs={
+        'class': 'form-control form-control-lg', 'placeholder': 'Nhập Email hoặc Mã SV/GV', 'autofocus': True,
     }))
     password = forms.CharField(label='Mật khẩu', widget=forms.PasswordInput(attrs={
         'class': 'form-control form-control-lg', 'placeholder': 'Mật khẩu',
     }))
 
     def clean(self):
-        email = self.cleaned_data.get('username')
+        login_id = self.cleaned_data.get('username')
         password = self.cleaned_data.get('password')
-        user = CustomUser.objects.filter(email=email).first()
+        from django.db.models import Q
+        user = CustomUser.objects.filter(Q(email=login_id) | Q(username=login_id)).first()
 
         if user:
             # Check lockout
