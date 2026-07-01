@@ -29,6 +29,12 @@ def counter_borrow_view(request):
                 messages.error(request, 'Sinh viên này đang bị khóa mượn sách.')
                 return render(request, 'circulation/counter_borrow.html')
                 
+            current_borrows = BorrowRecord.objects.filter(user=user, status__in=['pending', 'approved', 'borrowed', 'overdue']).count()
+            limit = 5 if user.role == 'lecturer' else 3
+            if current_borrows >= limit:
+                messages.error(request, f'Người dùng này đã đạt giới hạn mượn sách tối đa ({limit} cuốn chưa trả).')
+                return render(request, 'circulation/counter_borrow.html')
+                
             if book.available_copies <= 0:
                 messages.error(request, 'Sách này hiện không có sẵn.')
                 return render(request, 'circulation/counter_borrow.html')
@@ -206,20 +212,22 @@ def reservation_create_view(request, book_id):
 
     book = get_object_or_404(Book, pk=book_id)
     if request.method == 'POST':
-        existing = Reservation.objects.filter(user=request.user, book=book, status='active').exists()
-        if existing:
-            messages.warning(request, 'Bạn đã đặt trước sách này rồi.')
-        else:
-            current_reservations = Reservation.objects.filter(user=request.user, status='active').count()
-            limit = 5 if request.user.role == 'lecturer' else 3
-            if current_reservations >= limit:
-                messages.error(request, f'Bạn đã đạt giới hạn đặt trước tối đa ({limit} cuốn).')
-                return redirect('catalog:book_detail', pk=book.pk)
-                
-            Reservation.objects.create(
-                user=request.user, book=book, expires_at=timezone.now() + timedelta(days=3),
-            )
-            messages.success(request, f'Đã đặt trước sách "{book.title}". Hạn: 3 ngày.')
+        from django.db import transaction
+        with transaction.atomic():
+            existing = Reservation.objects.filter(user=request.user, book=book, status='active').select_for_update().exists()
+            if existing:
+                messages.warning(request, 'Bạn đã đặt trước sách này rồi.')
+            else:
+                current_reservations = Reservation.objects.filter(user=request.user, status='active').count()
+                limit = 5 if request.user.role == 'lecturer' else 3
+                if current_reservations >= limit:
+                    messages.error(request, f'Bạn đã đạt giới hạn đặt trước tối đa ({limit} cuốn).')
+                    return redirect('catalog:book_detail', pk=book.pk)
+                    
+                Reservation.objects.create(
+                    user=request.user, book=book, expires_at=timezone.now() + timedelta(days=3),
+                )
+                messages.success(request, f'Đã đặt trước sách "{book.title}". Hạn: 3 ngày.')
         return redirect('catalog:book_detail', pk=book.pk)
     return render(request, 'circulation/reserve_confirm.html', {'book': book})
 
@@ -253,18 +261,27 @@ def borrow_request_view(request, pk):
         messages.error(request, 'Cuốn sách này hiện không có sẵn để mượn.')
         return redirect('catalog:book_detail', pk=pk)
         
-    existing = BorrowRecord.objects.filter(user=request.user, book=book, status__in=['pending', 'approved', 'borrowed']).first()
-    if existing:
-        messages.warning(request, 'Bạn đã mượn hoặc đang gửi yêu cầu mượn cuốn sách này rồi.')
-        return redirect('catalog:book_detail', pk=pk)
+    from django.db import transaction
+    with transaction.atomic():
+        current_borrows = BorrowRecord.objects.filter(user=request.user, status__in=['pending', 'approved', 'borrowed', 'overdue']).select_for_update().count()
+        limit = 5 if request.user.role == 'lecturer' else 3
+        if current_borrows >= limit:
+            messages.error(request, f'Bạn đã đạt giới hạn mượn sách tối đa ({limit} cuốn chưa trả).')
+            return redirect('catalog:book_detail', pk=pk)
+
+        existing = BorrowRecord.objects.filter(user=request.user, book=book, status__in=['pending', 'approved', 'borrowed']).exists()
+        if existing:
+            messages.warning(request, 'Bạn đã mượn hoặc đang gửi yêu cầu mượn cuốn sách này rồi.')
+            return redirect('catalog:book_detail', pk=pk)
+            
+        BorrowRecord.objects.create(
+            user=request.user,
+            book=book,
+            due_date=timezone.now() + timedelta(days=14),
+            status='pending'
+        )
         
-    BorrowRecord.objects.create(
-        user=request.user,
-        book=book,
-        due_date=timezone.now() + timedelta(days=14),
-        status='pending'
-    )
-    messages.success(request, f'Đã gửi yêu cầu mượn sách "{book.title}" thành công! Vui lòng chờ thủ thư phê duyệt.')
+    messages.success(request, 'Yêu cầu mượn sách đã được gửi và đang chờ duyệt.')
     return redirect('circulation:borrow_history')
 
 
