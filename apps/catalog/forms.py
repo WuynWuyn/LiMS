@@ -21,7 +21,8 @@ class BookForm(forms.ModelForm):
     publisher_name = forms.CharField(
         label='Nhà xuất bản',
         required=True,
-        widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'VD: NXB Trẻ'})
+        max_length=255,
+        widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'VD: NXB Trẻ', 'maxlength': '255'})
     )
 
     class Meta:
@@ -29,12 +30,12 @@ class BookForm(forms.ModelForm):
         fields = ('title', 'isbn', 'authors', 'category', 'publication_year', 'description', 
                   'cover_image', 'price', 'total_copies', 'available_copies', 'status')
         widgets = {
-            'title': forms.TextInput(attrs={'class': 'form-control'}),
-            'isbn': forms.TextInput(attrs={'class': 'form-control'}),
-            'authors': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'VD: Nguyễn Nhật Ánh, Nam Cao'}),
+            'title': forms.TextInput(attrs={'class': 'form-control', 'maxlength': '500'}),
+            'isbn': forms.TextInput(attrs={'class': 'form-control', 'maxlength': '50'}),
+            'authors': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'VD: Nguyễn Nhật Ánh, Nam Cao', 'maxlength': '255'}),
             'category': forms.Select(attrs={'class': 'form-select'}),
             'publication_year': forms.NumberInput(attrs={'class': 'form-control'}),
-            'description': forms.Textarea(attrs={'class': 'form-control', 'rows': 4}),
+            'description': forms.Textarea(attrs={'class': 'form-control', 'rows': 4, 'maxlength': '2000'}),
             'cover_image': forms.FileInput(attrs={'class': 'form-control'}),
             'price': forms.NumberInput(attrs={'class': 'form-control'}),
             'total_copies': forms.NumberInput(attrs={'class': 'form-control'}),
@@ -111,8 +112,8 @@ class CategoryForm(forms.ModelForm):
         model = Category
         fields = ('name', 'description')
         widgets = {
-            'name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Tên thể loại'}),
-            'description': forms.Textarea(attrs={'class': 'form-control', 'rows': 2, 'placeholder': 'Mô tả'}),
+            'name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Tên thể loại', 'maxlength': '100'}),
+            'description': forms.Textarea(attrs={'class': 'form-control', 'rows': 2, 'placeholder': 'Mô tả', 'maxlength': '1000'}),
         }
         
     def clean_name(self):
