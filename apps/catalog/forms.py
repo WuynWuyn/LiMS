@@ -52,6 +52,9 @@ class BookForm(forms.ModelForm):
     def clean_title(self):
         title = self.cleaned_data.get('title')
         if title:
+            if '<' in title or '>' in title:
+                from django.core.exceptions import ValidationError
+                raise ValidationError("Tên sách không được chứa ký tự đặc biệt (<, >).")
             qs = Book.objects.filter(title__iexact=title)
             if self.instance.pk:
                 qs = qs.exclude(pk=self.instance.pk)
@@ -59,6 +62,20 @@ class BookForm(forms.ModelForm):
                 from django.core.exceptions import ValidationError
                 raise ValidationError(f"Sách có tên '{title}' đã tồn tại trong hệ thống.")
         return title
+
+    def clean_authors(self):
+        authors = self.cleaned_data.get('authors')
+        if authors and ('<' in authors or '>' in authors):
+            from django.core.exceptions import ValidationError
+            raise ValidationError("Tên tác giả không được chứa ký tự đặc biệt (<, >).")
+        return authors
+
+    def clean_publisher_name(self):
+        publisher_name = self.cleaned_data.get('publisher_name')
+        if publisher_name and ('<' in publisher_name or '>' in publisher_name):
+            from django.core.exceptions import ValidationError
+            raise ValidationError("Tên nhà xuất bản không được chứa ký tự đặc biệt (<, >).")
+        return publisher_name
 
     def clean_isbn(self):
         isbn = self.cleaned_data.get('isbn')
@@ -97,3 +114,17 @@ class CategoryForm(forms.ModelForm):
             'name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Tên thể loại'}),
             'description': forms.Textarea(attrs={'class': 'form-control', 'rows': 2, 'placeholder': 'Mô tả'}),
         }
+        
+    def clean_name(self):
+        name = self.cleaned_data.get('name')
+        if name and ('<' in name or '>' in name):
+            from django.core.exceptions import ValidationError
+            raise ValidationError("Tên thể loại không được chứa ký tự đặc biệt (<, >).")
+        return name
+
+    def clean_description(self):
+        description = self.cleaned_data.get('description')
+        if description and ('<' in description or '>' in description):
+            from django.core.exceptions import ValidationError
+            raise ValidationError("Mô tả không được chứa ký tự đặc biệt (<, >).")
+        return description
