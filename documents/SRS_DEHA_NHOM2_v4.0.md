@@ -1152,4 +1152,4 @@ lims_project/
 | v2.0.1 | – | Chuẩn hóa toàn diện: đủ 11 trường/UC, NFRs, Data Model, Deployment | Bùi Thị Quỳnh |
 | v3.0.0 | 05/2026 | Fine System (BR-23), UC10 cập nhật (BR-24), Email Notifications + Celery | Nguyễn Thị Phương Thảo |
 | v4.0.0 | 06/2026 | Tách CRUD UC03→UC03a-e, UC04→UC04a-e. Bổ sung 7 UC mới (UC14–UC20). Thêm phần Quy trình nghiệp vụ. Cập nhật RBAC, Data Model (Category), Business Rules (BR-25→BR-33). Chuẩn hóa phân quyền Admin/Thủ thư. | Nguyễn Thị Phương Thảo |
-| v5.0.0 | 06/2026 | Tái cấu trúc nghiệp vụ toàn diện: Siết chặt phân quyền Guest (chỉ đăng nhập, không tra cứu sách). Đề xuất & Phê duyệt chuẩn hóa theo `ISBN`. Gom nhóm tự động Mass Approve. Triệt tiêu toàn bộ thu phí phạt (UC17, FineReceipt). Chuyển sang mô hình quản lý tín nhiệm (Overdue/Reported Lost). | Ban Chuyên gia DeepMind |
+| v5.0.0 | 06/2026 | Tái cấu trúc nghiệp vụ toàn diện: Siết chặt phân quyền Guest (chỉ đăng nhập, không tra cứu sách). Đề xuất & Phê duyệt chuẩn hóa theo `ISBN`. Gom nhóm tự động Mass Approve. Triệt tiêu toàn bộ thu phí phạt (UC17, FineReceipt). Chuyển sang mô hình quản lý tín nhiệm (Overdue/Reported Lost). | Nguyễn Thị Phương Thảo |
