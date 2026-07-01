@@ -78,7 +78,7 @@ def register_view(request):
                 from django.core.mail import send_mail
                 from django.conf import settings
                 subject = 'Tài khoản LIMS của bạn đã được đăng ký'
-                message = f'Xin chào {user.username},\n\nTài khoản của bạn đã được đăng ký thành công.\nEmail đăng nhập: {user.email}\nMật khẩu: {password}\n\nVui lòng đăng nhập và đổi mật khẩu trong phần Hồ sơ.'
+                message = f'Xin chào {user.username},\n\nTài khoản của bạn đã được đăng ký thành công.\nEmail đăng nhập: {user.email}\nMật khẩu: {password}\n\nTruy cập hệ thống tại: https://anchovy-barista-reverend.ngrok-free.dev/\nVui lòng đăng nhập và đổi mật khẩu trong phần Hồ sơ.'
                 send_mail(subject, message, getattr(settings, 'DEFAULT_FROM_EMAIL', 'noreply@lims.local'), [user.email])
             except Exception:
                 pass
@@ -168,7 +168,7 @@ def user_create_view(request):
                 from django.core.mail import send_mail
                 from django.conf import settings
                 subject = 'Tài khoản LIMS của bạn đã được tạo'
-                message = f'Xin chào {user.username},\n\nTài khoản của bạn đã được quản trị viên tạo thành công.\nEmail đăng nhập: {user.email}\nMật khẩu: {password}\n\nVui lòng đăng nhập và đổi mật khẩu.'
+                message = f'Xin chào {user.username},\n\nTài khoản của bạn đã được quản trị viên tạo thành công.\nEmail đăng nhập: {user.email}\nMật khẩu: {password}\n\nTruy cập hệ thống tại: https://anchovy-barista-reverend.ngrok-free.dev/\nVui lòng đăng nhập và đổi mật khẩu.'
                 send_mail(subject, message, getattr(settings, 'DEFAULT_FROM_EMAIL', 'noreply@lims.local'), [user.email])
             except Exception:
                 pass
@@ -222,7 +222,7 @@ def user_import_view(request):
                                 from django.core.mail import send_mail
                                 from django.conf import settings
                                 subject = 'Tài khoản LIMS của bạn đã được tạo'
-                                message = f'Xin chào {user.username},\n\nTài khoản của bạn đã được tạo thành công.\nTên đăng nhập: {user.username}\nMật khẩu: {password}\n\nVui lòng đăng nhập và đổi mật khẩu.'
+                                message = f'Xin chào {user.username},\n\nTài khoản của bạn đã được tạo thành công.\nEmail đăng nhập: {email}\nMật khẩu: {password}\n\nTruy cập hệ thống tại: https://anchovy-barista-reverend.ngrok-free.dev/\nVui lòng đăng nhập và đổi mật khẩu.'
                                 send_mail(subject, message, getattr(settings, 'DEFAULT_FROM_EMAIL', 'noreply@lims.local'), [email])
                             except Exception:
                                 pass
