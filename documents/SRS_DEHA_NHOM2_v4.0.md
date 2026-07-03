@@ -54,7 +54,7 @@ Tài liệu đặc tả yêu cầu phần mềm này cung cấp cái nhìn tổn
 |:---|:---|
 | BABOK | Business Analysis Body of Knowledge – Chuẩn phân tích nghiệp vụ quốc tế (IIBA) |
 | RBAC | Role-Based Access Control – Phân quyền theo vai trò |
-| ISBN | International Standard Book Number – Mã số tiêu chuẩn quốc tế định danh duy nhất cho tài liệu sách |
+| ISBN | International Standard Book Number – Mã số tiêu chuẩn quốc tế định danh duy nhất cho tài liệu sách (Bắt buộc cho toàn hệ thống) |
 | Main Flow | Luồng chính: Kịch bản lý tưởng, hệ thống hoàn thành mục tiêu use case |
 | Alt Flow | Luồng thay thế: Đi qua con đường khác nhưng VẪN đạt mục tiêu |
 | Exception Flow | Luồng ngoại lệ: Kịch bản lỗi hoặc vi phạm quy tắc, KHÔNG đạt mục tiêu |
@@ -243,12 +243,14 @@ flowchart TD
 flowchart TD
     A[Reader] ---> B[Tra cứu sách]
     B ---> C{Còn sách trong kho?}
-    C --->|Còn| D[Đến quầy mượn sách]
-    D ---> E[Thủ thư xử lý mượn]
-    C --->|Hết sách| F[Đặt trước online]
+    C --->|Còn| D1[Đặt giữ chỗ Click & Collect]
+    C --->|Còn| D2[Đến quầy mượn trực tiếp Walk-in]
+    D1 ---> E[Thủ thư chuẩn bị sách & Giao sách]
+    D2 ---> E
+    C --->|Hết sách| F[Xếp hàng Đặt trước online]
     F ---> G[Vào hàng đợi]
     G --->|Sách được trả về| H[Gửi Email tự động]
-    H ---> D
+    H ---> D2
     E ---> I[Đang mượn]
     I --->|Gia hạn online| J[Hệ thống tự động duyệt]
     I --->|Đến hạn| K[Đến quầy trả sách]
