@@ -143,9 +143,9 @@
 {% block modals %}
 {% for record in page_obj %}
 
-{# ════════════════════════════════════════════════════
+<!-- ════════════════════════════════════════════════════
    MODAL VI PHẠM — chỉ hiện cho sách ĐANG MƯỢN
-   ════════════════════════════════════════════════════ #}
+   ════════════════════════════════════════════════════ -->
 {% if record.status == 'borrowed' %}
 <div class="modal fade" id="violationModal{{ record.pk }}" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered">
@@ -259,9 +259,9 @@
 </div>
 {% endif %}
 
-{# ════════════════════════════════════════════════════
+<!-- ════════════════════════════════════════════════════
    MODAL THANH TOÁN / BỒI THƯỜNG — hiện cho OVERDUE / LOST
-   ════════════════════════════════════════════════════ #}
+   ════════════════════════════════════════════════════ -->
 {% if record.status == 'overdue' or record.status == 'lost' %}
 <div class="modal fade" id="resolveModal{{ record.pk }}" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered">
