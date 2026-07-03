@@ -76,6 +76,9 @@ def user_history_view(request):
     # Đặt trước (Reservation)
     reservations = Reservation.objects.filter(user=user)
     
+    # Đặt giữ chỗ (Click & Collect - Pending / Approved)
+    click_collect_requests = BorrowRecord.objects.filter(user=user, status__in=['pending', 'approved']).order_by('-id')
+    
     # Vi phạm tín nhiệm (Overdue / Lost)
     violations = BorrowRecord.objects.filter(user=user, status__in=['overdue', 'lost'])
 
@@ -83,6 +86,7 @@ def user_history_view(request):
         'borrowed_records': borrowed_records,
         'returned_records': returned_records,
         'reservations': reservations,
+        'click_collect_requests': click_collect_requests,
         'violations': violations,
     }
     return render(request, 'dashboard/user_history.html', context)
@@ -102,12 +106,14 @@ def user_history_admin_view(request, pk):
     borrowed_records = BorrowRecord.objects.filter(user=user, status__in=['borrowed', 'overdue'])
     returned_records = BorrowRecord.objects.filter(user=user, status='returned')
     reservations = Reservation.objects.filter(user=user)
+    click_collect_requests = BorrowRecord.objects.filter(user=user, status__in=['pending', 'approved']).order_by('-id')
     violations = BorrowRecord.objects.filter(user=user, status__in=['overdue', 'lost'])
 
     context = {
         'borrowed_records': borrowed_records,
         'returned_records': returned_records,
         'reservations': reservations,
+        'click_collect_requests': click_collect_requests,
         'violations': violations,
         'viewed_user': user,
     }
