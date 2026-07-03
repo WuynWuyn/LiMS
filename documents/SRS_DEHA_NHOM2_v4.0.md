@@ -4,7 +4,7 @@
 
 **Công ty DEHA DIGITAL SOLUTIONS – NHÓM 02**
 
-**Phiên bản 4.0**
+**Phiên bản 5.0.0**
 
 ---
 
