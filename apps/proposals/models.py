@@ -26,8 +26,6 @@ class BookProposal(models.Model):
     )
     isbn = models.CharField(
         max_length=13,
-        blank=False,
-        null=False,
         default='0000000000000',
         verbose_name='Mã ISBN',
     )

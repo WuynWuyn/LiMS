@@ -43,8 +43,6 @@ class Book(models.Model):
     isbn = models.CharField(
         max_length=13,
         unique=True,
-        blank=True,
-        null=True,
         verbose_name='Mã ISBN',
     )
     authors = models.CharField(
