@@ -146,13 +146,13 @@
                             <tr>
                                 <td class="ps-4 fw-medium py-3 text-dark">{{ res.book.title }}</td>
                                 <td class="py-3">
-                                    {% if res.status == 'waiting' %}
+                                    {% if res.status == 'Waiting' %}
                                     <span class="badge bg-warning bg-opacity-10 text-warning px-3 py-2 rounded-pill fw-semibold">Đang đợi xếp hàng</span>
-                                    {% elif res.status == 'notified' %}
+                                    {% elif res.status == 'Notified' %}
                                     <span class="badge bg-success bg-opacity-10 text-success px-3 py-2 rounded-pill fw-semibold">Đã có sách</span>
-                                    {% elif res.status == 'completed' %}
+                                    {% elif res.status == 'Completed' %}
                                     <span class="badge bg-secondary bg-opacity-10 text-secondary px-3 py-2 rounded-pill fw-semibold">Hoàn tất</span>
-                                    {% elif res.status == 'cancelled' or res.status == 'expired' %}
+                                    {% elif res.status == 'Cancelled' or res.status == 'Expired' %}
                                     <span class="badge bg-danger bg-opacity-10 text-danger px-3 py-2 rounded-pill fw-semibold">Hủy / Quá hạn</span>
                                     {% else %}
                                     <span class="badge bg-primary bg-opacity-10 text-primary px-3 py-2 rounded-pill fw-semibold">{{ res.get_status_display }}</span>
@@ -160,7 +160,7 @@
                                 </td>
                                 <td class="text-muted py-3">{{ res.reserved_at|date:"d/m/Y H:i" }}</td>
                                 <td class="py-3">
-                                    {% if res.status == 'waiting' or res.status == 'notified' %}
+                                    {% if res.status == 'Waiting' or res.status == 'Notified' %}
                                     <form method="post" action="{% url 'circulation:reservation_cancel' res.pk %}" class="d-inline">
                                         {% csrf_token %}
                                         <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill" onclick="return confirm('Bạn có chắc chắn muốn hủy xếp hàng?');">Hủy</button>
