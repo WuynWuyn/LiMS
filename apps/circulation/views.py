@@ -21,12 +21,15 @@ def counter_borrow_view(request):
         
         try:
             from apps.accounts.models import CustomUser
-            from apps.catalog.models import Book
-            user = CustomUser.objects.get(username=student_code)
+            from django.db.models import Q
+            user = CustomUser.objects.filter(Q(email=student_code) | Q(username=student_code)).first()
+            if not user:
+                messages.error(request, 'Không tìm thấy người dùng (email không tồn tại trong hệ thống).')
+                return render(request, 'circulation/counter_borrow.html')
             book = Book.objects.get(isbn=book_isbn)
             
             if not user.can_borrow:
-                messages.error(request, 'Sinh viên này đang bị khóa mượn sách.')
+                messages.error(request, 'Người dùng này đang bị khóa mượn sách.')
                 return render(request, 'circulation/counter_borrow.html')
                 
             current_borrows = BorrowRecord.objects.filter(user=user, status__in=['pending', 'approved', 'borrowed', 'overdue']).count()
@@ -50,9 +53,7 @@ def counter_borrow_view(request):
             book.available_copies -= 1
             book.save()
             
-            messages.success(request, f'Đã cho {user.username} mượn sách {book.title}.')
-        except CustomUser.DoesNotExist:
-            messages.error(request, 'Không tìm thấy sinh viên (mã sinh viên không đúng).')
+            messages.success(request, f'Đã cho {user.email} mượn sách {book.title}.')
         except Book.DoesNotExist:
             messages.error(request, 'Không tìm thấy sách (ISBN không đúng).')
             
@@ -198,6 +199,53 @@ def report_lost_view(request, pk):
     return redirect('circulation:manage_borrows')
 
 
+@login_required
+def report_violation_view(request, pk):
+    """Xử lý vi phạm khi đang mượn: quá hạn, hỏng, mất."""
+    if request.user.role not in ['librarian', 'admin']:
+        messages.error(request, 'Không có quyền.')
+        return redirect('home')
+    record = get_object_or_404(BorrowRecord, pk=pk)
+    if record.status != 'borrowed':
+        messages.warning(request, 'Chỉ có thể xử lý vi phạm cho sách đang được mượn.')
+        return redirect('circulation:manage_borrows')
+
+    if request.method == 'POST':
+        violation_type = request.POST.get('violation_type')  # 'overdue' | 'damaged' | 'lost'
+        notes = request.POST.get('notes', '')
+        book = record.book
+
+        if violation_type == 'overdue':
+            record.status = 'overdue'
+            record.return_date = timezone.now()
+            record.notes = (f'[VI PHẠM: Quá hạn] {notes}').strip()
+            record.save()
+            book.available_copies += 1
+            book.save()
+            messages.warning(request, f'Đã ghi nhận vi phạm QUÁ HẠN cho sách "{book.title}". Quyền mượn sách của độc giả đã bị tạm khóa.')
+        elif violation_type == 'damaged':
+            record.status = 'lost'  # Dùng trạng thái lost để khóa quyền mượn
+            record.return_date = timezone.now()
+            record.notes = (f'[VI PHẠM: Hỏng sách] {notes}').strip()
+            record.save()
+            # Sách trả về nhưng đã hỏng — không tăng available_copies
+            fine = int(book.price * 1.5)
+            messages.warning(request, f'Đã ghi nhận vi phạm HỢNG SÁCH cho "{book.title}". Độc giả cần bồi thường 150% giá bìa ({fine:,}đ).')
+        elif violation_type == 'lost':
+            record.status = 'lost'
+            record.notes = (f'[VI PHẠM: Mất sách] {notes}').strip()
+            record.save()
+            if book.total_copies > 0:
+                book.total_copies -= 1
+            book.save()
+            fine = int(book.price * 1.5)
+            messages.warning(request, f'Đã ghi nhận vi phạm MẤT SÁCH cho "{book.title}". Tổng số bản giảm 1. Độc giả cần bồi thường 150% giá bìa ({fine:,}đ).')
+        else:
+            messages.error(request, 'Loại vi phạm không hợp lệ.')
+
+    return redirect('circulation:manage_borrows')
+
+
 
 @login_required
 def reservation_create_view(request, book_id):
@@ -297,19 +345,50 @@ def approve_borrow_view(request, pk):
             if record.book.available_copies <= 0:
                 messages.error(request, 'Sách này hiện đã hết bản sao có sẵn.')
                 return redirect('circulation:manage_borrows')
-            record.status = 'borrowed'
-            record.borrow_date = timezone.now()
-            record.due_date = timezone.now() + timedelta(days=14)
+            record.status = 'approved'
             record.approved_by = request.user
             record.save()
             record.book.available_copies -= 1
             record.book.save()
-            messages.success(request, f'Đã duyệt cho {record.user.username} mượn sách.')
+            
+            try:
+                from django.core.mail import send_mail
+                from django.conf import settings
+                send_mail(
+                    'Sách của bạn đã được chuẩn bị sẵn sàng - LiMS',
+                    f'Xin chào {record.user.username},\n\nCuốn sách "{record.book.title}" bạn đặt trước đã được thủ thư chuẩn bị sẵn.\nVui lòng đến quầy thư viện để nhận sách trong vòng 48 giờ.\nNếu quá 48 giờ, yêu cầu sẽ tự động bị hủy.',
+                    getattr(settings, 'DEFAULT_FROM_EMAIL', 'noreply@lims.local'),
+                    [record.user.email]
+                )
+            except Exception:
+                pass
+                
+            messages.success(request, f'Đã duyệt giữ chỗ cho {record.user.username}. Đã gửi email báo nhận sách trong 48h.')
         elif action == 'reject':
             record.status = 'cancelled'
             record.approved_by = request.user
             record.save()
-            messages.info(request, f'Đã từ chối yêu cầu mượn sách của {record.user.username}.')
+            messages.info(request, f'Đã từ chối yêu cầu của {record.user.username}.')
+    return redirect('circulation:manage_borrows')
+
+
+@login_required
+def handover_book_view(request, pk):
+    if request.user.role not in ['librarian', 'admin']:
+        messages.error(request, 'Bạn không có quyền.')
+        return redirect('home')
+    record = get_object_or_404(BorrowRecord, pk=pk)
+    if request.method == 'POST':
+        if record.status != 'approved':
+            messages.error(request, 'Phiếu này chưa được duyệt hoặc đã xử lý.')
+            return redirect('circulation:manage_borrows')
+            
+        record.status = 'borrowed'
+        record.borrow_date = timezone.now()
+        record.due_date = timezone.now() + timedelta(days=14)
+        record.save()
+        messages.success(request, f'Đã giao sách "{record.book.title}" cho {record.user.username}. Bắt đầu đếm ngày mượn.')
+        
     return redirect('circulation:manage_borrows')
 
 

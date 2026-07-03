@@ -45,7 +45,7 @@
 
                 <div class="d-flex flex-wrap gap-2">
                     {% if book.is_available %}
-                    <a href="{% url 'circulation:borrow_request' book.pk %}" class="btn btn-primary"><i class="bi bi-arrow-right-circle me-1"></i> Mượn sách</a>
+                    <a href="{% url 'circulation:borrow_request' book.pk %}" class="btn btn-primary"><i class="bi bi-bookmark-check me-1"></i> Đặt giữ chỗ (Có sẵn)</a>
                     {% else %}
                     <a href="{% url 'circulation:reserve_book' book.pk %}" class="btn btn-outline-primary"><i class="bi bi-bookmark me-1"></i> Đặt trước</a>
                     {% endif %}

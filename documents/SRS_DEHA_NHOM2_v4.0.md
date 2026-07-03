@@ -442,7 +442,7 @@ Mỗi Use Case được đặc tả đầy đủ 11 trường chuẩn IIBA v3. B
 | **Mô tả** | Admin chỉnh sửa thông tin cá nhân của một người dùng đã tồn tại trong hệ thống. |
 | **Sự kiện kích hoạt** | Admin click nút "Chỉnh sửa" trên dòng người dùng cần sửa hoặc trong trang chi tiết. |
 | **Tiền điều kiện** | Admin đã đăng nhập. Người dùng cần sửa tồn tại trong DB. |
-| **Luồng chính (Main Flow)** | 1. Hệ thống hiển thị Form chỉnh sửa với dữ liệu hiện tại: Mã SV/GV (readonly), Email, Họ và tên, Vai trò.<br>2. Admin chỉnh sửa các trường cần thay đổi.<br>3. Admin bấm "Lưu thay đổi".<br>4. Hệ thống validate dữ liệu: Email unique (trừ chính user này), format hợp lệ.<br>5. Cập nhật DB.<br>6. Hiển thị thông báo "Cập nhật thông tin thành công". |
+| **Luồng chính (Main Flow)** | 1. Hệ thống hiển thị Form chỉnh sửa với dữ liệu hiện tại: Email, Họ và tên, Vai trò.<br>2. Admin chỉnh sửa các trường cần thay đổi.<br>3. Admin bấm "Lưu thay đổi".<br>4. Hệ thống validate dữ liệu: Email unique (trừ chính user này), format hợp lệ.<br>5. Cập nhật DB.<br>6. Hiển thị thông báo "Cập nhật thông tin thành công". |
 | **Luồng thay thế (Alt Flow)** | **(A1)** Reset mật khẩu: Admin bấm "Reset mật khẩu" → Hệ thống sinh mật khẩu mới → Gửi email cho user. |
 | **Luồng ngoại lệ (Exception Flow)** | **(E1)** Email mới trùng với user khác → Báo lỗi "Email đã được sử dụng".<br>**(E2)** Dữ liệu không hợp lệ → Báo lỗi validation chi tiết. |
 | **Hậu điều kiện** | Thông tin người dùng được cập nhật trong DB. |
@@ -825,28 +825,29 @@ Mỗi Use Case được đặc tả đầy đủ 11 trường chuẩn IIBA v3. B
 
 ---
 
-### UC11 – Trả sách, Báo Hỏng/Mất và Xử lý Đền bù
+### UC11 – Trả sách, Báo Hỏng/Mất và Xử lý Bồi thường
 
 | Mã Use Case | UC11 |
 |:---|:---|
-| **Tên Use Case** | Trả sách, Báo Hỏng/Mất và Xử lý Đền bù |
+| **Tên Use Case** | Trả sách, Báo Hỏng/Mất và Xử lý Bồi thường |
 | **Tác nhân** | Thủ thư |
-| **Mô tả** | Thủ thư xử lý thu hồi sách tại quầy: trả bình thường, ghi nhận trả trễ (Overdue), hoặc xử lý báo mất tài liệu (Reported Lost) với bồi thường tài liệu tương đương hoặc 150% giá bìa. |
-| **Sự kiện kích hoạt** | Sinh viên mang sách đến quầy (hoặc báo mất). Thủ thư bấm "Xử lý Trả sách". |
-| **Tiền điều kiện** | Tồn tại BorrowRecord có status = borrowed hoặc overdue. |
-| **Luồng chính (Main Flow)** | 1. Thủ thư nhập Mã sách hoặc quét mã vạch.<br>2. Hệ thống tìm BorrowRecord active.<br>3. Hiển thị thông tin phiếu mượn: Người mượn, Ngày mượn, Ngày hẹn trả.<br>4. Thủ thư xác nhận sách nguyên vẹn trả đúng hạn → Bấm "Xác nhận Trả".<br>5. Cập nhật BorrowRecord.status = `Returned`; available\_copies += 1.<br>6. Nếu có Reservation Waiting → Gửi Email cho người đầu hàng đợi.<br>7. Hiển thị "Trả sách thành công". |
-| **Luồng thay thế (Alt Flow)** | **(A1)** Trả sách quá hạn: Thủ thư bấm trả sách -> Hệ thống cập nhật BorrowRecord.status = `Overdue` (Ghi nhận lịch sử tín nhiệm) -> available\_copies += 1.<br>**(A2)** Báo mất sách: Thủ thư chọn "Báo mất tài liệu" → Cập nhật BorrowRecord.status = `Reported Lost`; total\_copies -= 1. Khóa quyền mượn sách mới của User cho đến khi đền bù xong tài liệu vật lý thay thế. |
-| **Luồng ngoại lệ (Exception Flow)** | **(E1)** Độc giả báo mất nhưng chưa hoàn thành bồi thường tài liệu vật lý → Trạng thái giữ nguyên Reported Lost → Khóa quyền mượn tài liệu mới (BR-19).<br>**(E2)** Mã sách không tìm thấy BorrowRecord active → Báo lỗi. |
-| **Hậu điều kiện** | BorrowRecord cập nhật trạng thái (Returned, Overdue, hoặc Reported Lost). available\_copies và total\_copies cập nhật. |
-| **Business Rules** | - BR-18: Độc giả báo mất tài liệu vật lý bắt buộc phải bồi thường cuốn sách tương đương hoặc thanh toán chi phí tái tạo bằng 150% giá bìa.<br> - BR-19: Tồn tại tài liệu trạng thái Reported Lost chưa bồi thường → Khóa quyền mượn tài liệu mới.<br> - BR-23: Khi trả sách quá hạn hẹn trả, hệ thống ghi nhận trạng thái Overdue vào điểm tín nhiệm độc giả. |
+| **Mô tả** | Thủ thư xử lý thu hồi sách tại quầy thông qua 2 bước tách biệt: (1) Trả sách bình thường hoặc Ghi nhận vi phạm (Quá hạn, Hỏng, Mất) và (2) Xử lý bồi thường để khôi phục điểm tín nhiệm. |
+| **Sự kiện kích hoạt** | Sinh viên mang sách đến quầy. Thủ thư bấm "Trả sách" (nếu bình thường) hoặc "Vi phạm" (nếu có vấn đề). |
+| **Tiền điều kiện** | Tồn tại BorrowRecord có status = `borrowed`, `overdue`, hoặc `lost`. |
+| **Luồng chính (Trả sách bình thường)** | 1. Thủ thư kiểm tra danh sách phiếu Đang mượn.<br>2. Thủ thư kiểm tra sách nguyên vẹn, trả đúng hạn.<br>3. Thủ thư bấm "Trả sách" trên hệ thống.<br>4. Cập nhật BorrowRecord.status = `Returned`; available\_copies += 1.<br>5. Nếu có Reservation Waiting → Tự động gửi Email cho người đầu hàng đợi.<br>6. Hiển thị thông báo "Trả sách thành công". |
+| **Luồng thay thế (Ghi nhận và Xử lý Vi phạm)** | **(A1)** Ghi nhận Vi phạm: Thủ thư bấm "Vi phạm" → Chọn loại vi phạm (Quá hạn, Hỏng sách, Mất sách).<br>**(A2)** Quá hạn: Cập nhật status=`overdue`, ghi nhận trả sách, available\_copies += 1.<br>**(A3)** Hỏng/Mất sách: Cập nhật status=`lost`, hệ thống tự tính bồi thường 150% giá bìa. Nếu mất thì total\_copies -= 1. Khóa quyền mượn sách mới.<br>**(A4)** Giải quyết bồi thường: Đối với phiếu bị `overdue` hoặc `lost`, Thủ thư bấm "Thanh toán / Bồi thường". Chọn hình thức giải quyết (Đã trả / Đền bù sách mới / Thanh toán 150% giá bìa) để hoàn tất và mở khóa tín nhiệm. |
+| **Luồng ngoại lệ (Exception Flow)** | **(E1)** Độc giả vi phạm nhưng chưa hoàn thành thanh toán/bồi thường → Trạng thái giữ nguyên `overdue`/`lost` → Khóa quyền mượn tài liệu mới (BR-19).<br>**(E2)** Sách đang chờ duyệt mượn không thể trả/báo vi phạm. |
+| **Hậu điều kiện** | BorrowRecord được xử lý hoàn tất. Quyền mượn của độc giả được khôi phục nếu đã xử lý xong vi phạm. available\_copies và total\_copies cập nhật. |
+| **Business Rules** | - BR-18: Độc giả báo mất/hỏng tài liệu vật lý bắt buộc phải bồi thường cuốn sách tương đương hoặc thanh toán chi phí tái tạo bằng 150% giá bìa.<br> - BR-19: Tồn tại tài liệu trạng thái Reported Lost hoặc Overdue chưa giải quyết → Khóa quyền mượn tài liệu mới.<br> - BR-23: Khi trả sách quá hạn hẹn trả, hệ thống ghi nhận trạng thái Overdue vào điểm tín nhiệm độc giả. |
 
 **Bảng Dữ liệu Đầu vào – UC11**
 
 | # | Tên trường | Kiểu | Bắt buộc | Validation Rules | Ví dụ / Ghi chú |
 |:---:|:---|:---|:---:|:---|:---|
-| 1 | Mã Sách / ISBN | Text | Có | Phải có BorrowRecord active | 978-604-0-12345-6 |
-| 2 | Tình trạng sách | Radio | Có | Nguyên vẹn / Hỏng / Mất | Nguyên vẹn |
-| 3 | Ghi chú tình trạng | Textarea | Tùy chọn | Max 500 chars | Trả trễ hạn, báo mất tài liệu |
+| 1 | Hành động | Nút bấm | Có | Trả sách / Vi phạm / Bồi thường | |
+| 2 | Loại vi phạm | Radio | Có (nếu báo VP)| Quá hạn / Hỏng / Mất | Quá hạn trả sách |
+| 3 | Hình thức xử lý | Select | Có (nếu bồi thường)| Đã trả / Đền sách mới / Thanh toán 150% | Thanh toán 150% giá bìa |
+| 4 | Ghi chú xử lý | Textarea | Tùy chọn | | Thu tiền mặt, SV đền sách cùng ISBN |
 
 ---
 

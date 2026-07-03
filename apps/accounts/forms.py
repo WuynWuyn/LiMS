@@ -10,8 +10,8 @@ from django.utils import timezone
 import datetime
 
 class CustomLoginForm(AuthenticationForm):
-    username = forms.CharField(label='Email / Tên đăng nhập', widget=forms.TextInput(attrs={
-        'class': 'form-control form-control-lg', 'placeholder': 'Nhập Email hoặc Mã SV/GV', 'autofocus': True,
+    username = forms.CharField(label='Email', widget=forms.TextInput(attrs={
+        'class': 'form-control form-control-lg', 'placeholder': 'Nhập Email của bạn', 'autofocus': True,
     }))
     password = forms.CharField(label='Mật khẩu', widget=forms.PasswordInput(attrs={
         'class': 'form-control form-control-lg', 'placeholder': 'Mật khẩu',

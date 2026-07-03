@@ -139,7 +139,10 @@ def book_import_view(request):
                     
 
                     count += 1
-                messages.success(request, f'Đã import thành công {count} cuốn sách!')
+                if count > 0:
+                    messages.success(request, f'Đã import thành công {count} cuốn sách!')
+                else:
+                    messages.warning(request, 'Không có cuốn sách mới nào được thêm (các sách trong file Excel đã tồn tại trong hệ thống).')
                 return redirect('catalog:book_manage')
             except Exception as e:
                 messages.error(request, f'Lỗi khi đọc file: {str(e)}')

@@ -6,6 +6,7 @@
 <div class="filter-pills mb-3">
     <a href="?status=" class="filter-pill {% if not status_filter %}active{% endif %}">Tất cả</a>
     <a href="?status=pending" class="filter-pill {% if status_filter == 'pending' %}active{% endif %}">Chờ duyệt</a>
+    <a href="?status=approved" class="filter-pill {% if status_filter == 'approved' %}active{% endif %}">Đã soạn sách</a>
     <a href="?status=borrowed" class="filter-pill {% if status_filter == 'borrowed' %}active{% endif %}">Đang mượn</a>
     <a href="?status=returned" class="filter-pill {% if status_filter == 'returned' %}active{% endif %}">Đã trả</a>
     <a href="?status=overdue" class="filter-pill {% if status_filter == 'overdue' %}active{% endif %}">Quá hạn</a>
@@ -15,7 +16,18 @@
     <div class="card-body p-0">
         <div class="table-responsive">
             <table class="table table-hover mb-0">
-                <thead><tr><th>#</th><th>Người mượn</th><th>Sách</th><th>Ngày mượn</th><th>Hạn trả</th><th>Trạng thái</th><th>Tín nhiệm</th><th>Hành động</th></tr></thead>
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Người mượn</th>
+                        <th>Sách</th>
+                        <th>Ngày mượn</th>
+                        <th>Hạn trả</th>
+                        <th>Trạng thái</th>
+                        <th>Tín nhiệm</th>
+                        <th>Hành động</th>
+                    </tr>
+                </thead>
                 <tbody>
                 {% for record in page_obj %}
                 <tr class="{% if record.is_overdue %}table-danger{% endif %}">
@@ -29,40 +41,68 @@
                         {% if record.status == 'overdue' %}
                             <span class="badge bg-danger">Vi phạm: Quá hạn</span>
                         {% elif record.status == 'lost' %}
-                            <span class="badge bg-dark text-white">Vi phạm: Mất sách</span>
+                            <span class="badge bg-dark text-white">Vi phạm: Mất/Hỏng sách</span>
                         {% else %}
                             <span class="badge bg-success">Tốt</span>
                         {% endif %}
                     </td>
                     <td>
+                        {# ── PENDING: duyệt / từ chối ── #}
                         {% if record.status == 'pending' %}
                         <form method="post" action="{% url 'circulation:approve_borrow' record.pk %}" class="d-inline">
                             {% csrf_token %}
                             <input type="hidden" name="action" value="approve">
-                            <input type="hidden" name="due_days" value="14">
-                            <button class="btn btn-sm btn-success" data-bs-toggle="tooltip" title="Duyệt (14 ngày)"><i class="bi bi-check-lg"></i></button>
+                            <button class="btn btn-sm btn-success" data-bs-toggle="tooltip" title="Duyệt (Báo đã soạn sách)">
+                                <i class="bi bi-check-lg"></i> Soạn sách
+                            </button>
                         </form>
                         <form method="post" action="{% url 'circulation:approve_borrow' record.pk %}" class="d-inline">
                             {% csrf_token %}
                             <input type="hidden" name="action" value="reject">
-                            <button class="btn btn-sm btn-danger" data-bs-toggle="tooltip" title="Từ chối"><i class="bi bi-x-lg"></i></button>
+                            <button class="btn btn-sm btn-danger" data-bs-toggle="tooltip" title="Từ chối">
+                                <i class="bi bi-x-lg"></i>
+                            </button>
                         </form>
+
+                        {# ── APPROVED: giao sách tại quầy ── #}
+                        {% elif record.status == 'approved' %}
+                        <form method="post" action="{% url 'circulation:handover_book' record.pk %}" class="d-inline">
+                            {% csrf_token %}
+                            <button class="btn btn-sm btn-primary" data-bs-toggle="tooltip" title="Xác nhận giao sách cho người đọc">
+                                <i class="bi bi-person-check-fill"></i> Giao sách
+                            </button>
+                        </form>
+
+                        {# ── BORROWED: trả sách + vi phạm ── #}
                         {% elif record.status == 'borrowed' %}
+                        {# Nút Trả sách bình thường #}
                         <form method="post" action="{% url 'circulation:return_book' record.pk %}" class="d-inline">
                             {% csrf_token %}
-                            <button class="btn btn-sm btn-primary" data-bs-toggle="tooltip" title="Xử lý trả"><i class="bi bi-box-arrow-in-left"></i> Trả</button>
+                            <input type="hidden" name="book_condition" value="normal">
+                            <button class="btn btn-sm btn-primary" data-bs-toggle="tooltip" title="Xác nhận trả sách">
+                                <i class="bi bi-box-arrow-in-left"></i> Trả sách
+                            </button>
                         </form>
-                        <form method="post" action="{% url 'circulation:report_lost' record.pk %}" class="d-inline">
-                            {% csrf_token %}
-                            <button class="btn btn-sm btn-danger" data-bs-toggle="tooltip" title="Báo mất"><i class="bi bi-exclamation-triangle"></i> Mất</button>
-                        </form>
-                        {% endif %}
-                        {% if record.status == 'overdue' or record.status == 'lost' %}
-                        <button type="button" class="btn btn-sm btn-success" data-bs-toggle="modal" data-bs-target="#resolveModal{{ record.pk }}" title="Xử lý Vi phạm">
+                        {# Nút Vi phạm → mở modal chọn loại vi phạm #}
+                        <button type="button"
+                                class="btn btn-sm btn-warning"
+                                data-bs-toggle="modal"
+                                data-bs-target="#violationModal{{ record.pk }}"
+                                title="Xử lý vi phạm">
+                            <i class="bi bi-exclamation-triangle"></i> Vi phạm
+                        </button>
+
+                        {# ── OVERDUE / LOST: thanh toán / bồi thường ── #}
+                        {% elif record.status == 'overdue' or record.status == 'lost' %}
+                        <button type="button"
+                                class="btn btn-sm btn-success"
+                                data-bs-toggle="modal"
+                                data-bs-target="#resolveModal{{ record.pk }}"
+                                title="Xử lý bồi thường / thanh toán">
                             <i class="bi bi-check-circle"></i> Thanh toán / Bồi thường
                         </button>
-                        {% endif %}
-                        {% if record.status != 'pending' and record.status != 'borrowed' and record.status != 'overdue' and record.status != 'lost' %}
+
+                        {% else %}
                         <span class="text-muted">-</span>
                         {% endif %}
                     </td>
@@ -75,6 +115,7 @@
         </div>
     </div>
 </div>
+
 {% if page_obj %}
 <nav class="mt-3 d-flex justify-content-center">
     <ul class="pagination">
@@ -96,57 +137,232 @@
     </ul>
 </nav>
 {% endif %}
-
 {% endblock %}
 
+
 {% block modals %}
-<!-- Resolve Modals -->
 {% for record in page_obj %}
-{% if record.status == 'overdue' or record.status == 'lost' %}
-<div class="modal fade" id="resolveModal{{ record.pk }}" tabindex="-1" aria-labelledby="resolveModalLabel{{ record.pk }}" aria-hidden="true">
-  <div class="modal-dialog">
-    <div class="modal-content text-start">
-      <form method="post" action="{% url 'circulation:resolve_violation' record.pk %}">
+
+{# ════════════════════════════════════════════════════
+   MODAL VI PHẠM — chỉ hiện cho sách ĐANG MƯỢN
+   ════════════════════════════════════════════════════ #}
+{% if record.status == 'borrowed' %}
+<div class="modal fade" id="violationModal{{ record.pk }}" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <form method="post" action="{% url 'circulation:report_violation' record.pk %}" id="violationForm{{ record.pk }}">
         {% csrf_token %}
-        <div class="modal-header">
-          <h5 class="modal-title" id="resolveModalLabel{{ record.pk }}">Xử lý Vi phạm / Bồi thường</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        <div class="modal-header bg-warning bg-opacity-10 border-bottom">
+          <h5 class="modal-title">
+            <i class="bi bi-exclamation-triangle-fill text-warning me-2"></i>
+            Xử lý Vi phạm
+          </h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
         </div>
+
         <div class="modal-body">
-          <p><strong>Người mượn:</strong> {{ record.user.username }}</p>
-          <p><strong>Sách:</strong> {{ record.book.title }}</p>
-          <p><strong>Loại vi phạm:</strong> 
-            {% if record.status == 'overdue' %}
-                <span class="text-danger">Quá hạn trả sách</span>
-            {% elif record.status == 'lost' %}
-                <span class="text-dark">Báo mất sách</span>
-            {% endif %}
-          </p>
-          
-          <div class="mb-3">
-              <label class="form-label">Hình thức xử lý (Theo SRS BR-13 & BR-18):</label>
-              <select class="form-select" name="resolution_type" required>
-                  {% if record.status == 'overdue' %}
-                  <option value="returned_late">Đã trả sách (Mở khóa tín nhiệm)</option>
-                  {% elif record.status == 'lost' %}
-                  <option value="replaced_book">Đền bù sách mới (Cùng ISBN)</option>
-                  <option value="paid_150">Thanh toán 150% giá bìa ({{ record.book.price|add:record.book.price|add:record.book.price|default:0 }} đ)</option>
-                  {% endif %}
-              </select>
+          {# Thông tin phiếu #}
+          <div class="alert alert-light border mb-3 py-2">
+            <div class="row g-1 small">
+              <div class="col-5 text-muted">Người mượn:</div>
+              <div class="col-7 fw-semibold">{{ record.user.get_full_name|default:record.user.username }}</div>
+              <div class="col-5 text-muted">Sách:</div>
+              <div class="col-7 fw-semibold">{{ record.book.title|truncatechars:40 }}</div>
+              <div class="col-5 text-muted">Hạn trả:</div>
+              <div class="col-7 fw-semibold {% if record.is_overdue %}text-danger{% endif %}">
+                {{ record.due_date|date:"d/m/Y" }}
+                {% if record.is_overdue %}<span class="badge bg-danger ms-1">Quá hạn</span>{% endif %}
+              </div>
+              <div class="col-5 text-muted">Giá bìa sách:</div>
+              <div class="col-7 fw-semibold">{{ record.book.price|floatformat:0 }}đ</div>
+            </div>
           </div>
+
+          {# BƯỚC 1: Chọn loại vi phạm #}
           <div class="mb-3">
-              <label class="form-label">Ghi chú thêm:</label>
-              <textarea class="form-control" name="resolution_notes" rows="2"></textarea>
+            <label class="form-label fw-semibold">
+              <span class="badge bg-warning text-dark me-1">Bước 1</span>
+              Chọn loại vi phạm <span class="text-danger">*</span>
+            </label>
+            <div class="d-flex flex-column gap-2">
+              <label class="border rounded p-3 d-flex align-items-start gap-3 violation-option cursor-pointer"
+                     style="cursor:pointer" for="vtype_overdue_{{ record.pk }}">
+                <input class="form-check-input mt-1 flex-shrink-0 vtype-radio"
+                       type="radio" name="violation_type" id="vtype_overdue_{{ record.pk }}"
+                       value="overdue" data-price="{{ record.book.price }}"
+                       data-record="{{ record.pk }}" required>
+                <div>
+                  <div class="fw-semibold text-danger"><i class="bi bi-clock-history me-1"></i>Quá hạn trả sách</div>
+                  <small class="text-muted">Sách được trả lại nhưng đã quá ngày hẹn trả. Ghi nhận vi phạm tín nhiệm.</small>
+                </div>
+              </label>
+
+              <label class="border rounded p-3 d-flex align-items-start gap-3 violation-option cursor-pointer"
+                     style="cursor:pointer" for="vtype_damaged_{{ record.pk }}">
+                <input class="form-check-input mt-1 flex-shrink-0 vtype-radio"
+                       type="radio" name="violation_type" id="vtype_damaged_{{ record.pk }}"
+                       value="damaged" data-price="{{ record.book.price }}"
+                       data-record="{{ record.pk }}" required>
+                <div>
+                  <div class="fw-semibold text-warning"><i class="bi bi-bandaid me-1"></i>Hỏng sách</div>
+                  <small class="text-muted">Sách bị hư hỏng khi trả lại. Độc giả phải bồi thường <strong>150% giá bìa</strong>.</small>
+                </div>
+              </label>
+
+              <label class="border rounded p-3 d-flex align-items-start gap-3 violation-option cursor-pointer"
+                     style="cursor:pointer" for="vtype_lost_{{ record.pk }}">
+                <input class="form-check-input mt-1 flex-shrink-0 vtype-radio"
+                       type="radio" name="violation_type" id="vtype_lost_{{ record.pk }}"
+                       value="lost" data-price="{{ record.book.price }}"
+                       data-record="{{ record.pk }}" required>
+                <div>
+                  <div class="fw-semibold text-dark"><i class="bi bi-book me-1"></i>Mất sách</div>
+                  <small class="text-muted">Sách không được trả lại. Tổng số bản giảm 1. Độc giả phải bồi thường <strong>150% giá bìa</strong>.</small>
+                </div>
+              </label>
+            </div>
+          </div>
+
+          {# BƯỚC 2: Thông tin bồi thường — hiện sau khi chọn loại #}
+          <div id="step2_{{ record.pk }}" class="d-none">
+            <hr class="my-3">
+            <div class="mb-3">
+              <label class="form-label fw-semibold">
+                <span class="badge bg-primary me-1">Bước 2</span>
+                Thông tin xử lý
+              </label>
+
+              {# Hiển thị mức bồi thường nếu là hỏng/mất #}
+              <div id="fine_info_{{ record.pk }}" class="alert alert-warning d-none py-2 mb-3">
+                <i class="bi bi-cash-coin me-1"></i>
+                Mức bồi thường: <strong id="fine_amount_{{ record.pk }}"></strong>
+                (150% × {{ record.book.price|floatformat:0 }}đ giá bìa)
+              </div>
+
+              <textarea class="form-control" name="notes" rows="3"
+                        placeholder="Ghi chú thêm (tình trạng sách, thỏa thuận với độc giả...)"></textarea>
+            </div>
           </div>
         </div>
+
         <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
-          <button type="submit" class="btn btn-success">Xác nhận hoàn tất</button>
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+          <button type="submit" id="submitViolation_{{ record.pk }}"
+                  class="btn btn-danger d-none">
+            <i class="bi bi-exclamation-circle me-1"></i>
+            Xác nhận Vi phạm
+          </button>
         </div>
       </form>
     </div>
   </div>
 </div>
 {% endif %}
+
+{# ════════════════════════════════════════════════════
+   MODAL THANH TOÁN / BỒI THƯỜNG — hiện cho OVERDUE / LOST
+   ════════════════════════════════════════════════════ #}
+{% if record.status == 'overdue' or record.status == 'lost' %}
+<div class="modal fade" id="resolveModal{{ record.pk }}" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content text-start">
+      <form method="post" action="{% url 'circulation:resolve_violation' record.pk %}">
+        {% csrf_token %}
+        <div class="modal-header bg-success bg-opacity-10 border-bottom">
+          <h5 class="modal-title">
+            <i class="bi bi-check-circle-fill text-success me-2"></i>
+            Thanh toán / Bồi thường Vi phạm
+          </h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <div class="alert alert-light border mb-3 py-2">
+            <div class="row g-1 small">
+              <div class="col-5 text-muted">Người mượn:</div>
+              <div class="col-7 fw-semibold">{{ record.user.get_full_name|default:record.user.username }}</div>
+              <div class="col-5 text-muted">Sách:</div>
+              <div class="col-7 fw-semibold">{{ record.book.title|truncatechars:40 }}</div>
+              <div class="col-5 text-muted">Loại vi phạm:</div>
+              <div class="col-7">
+                {% if record.status == 'overdue' %}
+                  <span class="badge bg-danger">Quá hạn trả sách</span>
+                {% elif record.status == 'lost' %}
+                  <span class="badge bg-dark">Mất / Hỏng sách</span>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Hình thức giải quyết <span class="text-danger">*</span></label>
+            <select class="form-select" name="resolution_type" required>
+              {% if record.status == 'overdue' %}
+              <option value="returned_late">✅ Đã trả sách (trễ hạn) — Mở khóa tín nhiệm</option>
+              {% elif record.status == 'lost' %}
+              <option value="replaced_book">📚 Đền bù sách mới cùng ISBN — Hoàn kho</option>
+              <option value="paid_150">💵 Thanh toán 150% giá bìa — Bồi thường tiền mặt</option>
+              {% endif %}
+            </select>
+          </div>
+
+          <div class="mb-2">
+            <label class="form-label fw-semibold">Ghi chú:</label>
+            <textarea class="form-control" name="resolution_notes" rows="2"
+                      placeholder="Ghi lại chi tiết quá trình xử lý..."></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+          <button type="submit" class="btn btn-success">
+            <i class="bi bi-check-lg me-1"></i>Xác nhận hoàn tất
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endif %}
+
 {% endfor %}
+
+<script>
+// Khi người dùng chọn loại vi phạm → hiện bước 2 và nút xác nhận
+document.querySelectorAll('.vtype-radio').forEach(function(radio) {
+  radio.addEventListener('change', function() {
+    const pk = this.dataset.record;
+    const price = parseInt(this.dataset.price) || 0;
+    const fine = Math.round(price * 1.5);
+    const step2 = document.getElementById('step2_' + pk);
+    const fineInfo = document.getElementById('fine_info_' + pk);
+    const fineAmt = document.getElementById('fine_amount_' + pk);
+    const submitBtn = document.getElementById('submitViolation_' + pk);
+
+    // Hiện bước 2
+    step2.classList.remove('d-none');
+    submitBtn.classList.remove('d-none');
+
+    // Highlight option được chọn
+    document.querySelectorAll('#violationModal' + pk + ' .violation-option').forEach(function(el) {
+      el.classList.remove('border-warning', 'border-danger', 'border-dark', 'bg-light');
+    });
+    this.closest('.violation-option').classList.add('bg-light');
+
+    // Hiện/ẩn thông tin bồi thường tùy loại
+    if (this.value === 'damaged' || this.value === 'lost') {
+      fineInfo.classList.remove('d-none');
+      fineAmt.textContent = fine.toLocaleString('vi-VN') + 'đ';
+    } else {
+      fineInfo.classList.add('d-none');
+    }
+
+    // Đổi text nút submit theo loại
+    const labels = {
+      'overdue': '<i class="bi bi-exclamation-circle me-1"></i>Ghi nhận Quá hạn',
+      'damaged': '<i class="bi bi-bandaid me-1"></i>Ghi nhận Hỏng sách',
+      'lost':    '<i class="bi bi-book me-1"></i>Ghi nhận Mất sách',
+    };
+    submitBtn.innerHTML = labels[this.value] || 'Xác nhận Vi phạm';
+  });
+});
+</script>
 {% endblock %}

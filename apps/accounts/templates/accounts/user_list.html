@@ -50,12 +50,21 @@
                         <td>
                             <a href="{% url 'dashboard:user_history_admin' u.pk %}" class="btn btn-sm btn-outline-info" data-bs-toggle="tooltip" title="Xem lịch sử"><i class="bi bi-clock-history"></i></a>
                             <a href="{% url 'accounts:user_edit' u.pk %}" class="btn btn-sm btn-outline-primary" data-bs-toggle="tooltip" title="Chỉnh sửa"><i class="bi bi-pencil"></i></a>
+                            
+                            {% if u.is_active %}
+                            <!-- Nút mở Modal Vô hiệu hóa -->
+                            <button type="button" class="btn btn-sm btn-outline-warning" data-bs-toggle="modal" data-bs-target="#deactivateModal{{ u.pk }}" title="Vô hiệu hóa">
+                                <i class="bi bi-pause-circle"></i>
+                            </button>
+                            {% else %}
+                            <!-- Nút Kích hoạt trực tiếp -->
                             <form method="post" action="{% url 'accounts:user_toggle' u.pk %}" class="d-inline">
                                 {% csrf_token %}
-                                <button class="btn btn-sm btn-outline-{{ u.is_active|yesno:'warning,success' }}" data-bs-toggle="tooltip" title="{{ u.is_active|yesno:'Vô hiệu hóa,Kích hoạt' }}">
-                                    <i class="bi bi-{{ u.is_active|yesno:'pause-circle,play-circle' }}"></i>
+                                <button type="submit" class="btn btn-sm btn-outline-success" data-bs-toggle="tooltip" title="Kích hoạt">
+                                    <i class="bi bi-play-circle"></i>
                                 </button>
                             </form>
+                            {% endif %}
                         </td>
                     </tr>
                 {% empty %}
@@ -87,4 +96,39 @@
     </ul>
 </nav>
 {% endif %}
+{% endblock %}
+
+{% block modals %}
+{% for u in page_obj %}
+{% if u.is_active %}
+<!-- Modal Vô hiệu hóa User -->
+<div class="modal fade" id="deactivateModal{{ u.pk }}" tabindex="-1" aria-labelledby="deactivateModalLabel{{ u.pk }}" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <form method="post" action="{% url 'accounts:user_toggle' u.pk %}">
+        {% csrf_token %}
+        <div class="modal-header bg-warning bg-opacity-10 border-bottom">
+          <h5 class="modal-title" id="deactivateModalLabel{{ u.pk }}">
+            <i class="bi bi-exclamation-triangle text-warning me-2"></i>Xác nhận vô hiệu hóa
+          </h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <p>Bạn có chắc chắn muốn vô hiệu hóa tài khoản <strong>{{ u.email }}</strong>?</p>
+          <ul class="text-muted small">
+            <li>Người dùng này sẽ không thể đăng nhập vào hệ thống.</li>
+            <li>Tài khoản không bị xóa và vẫn hiển thị trong danh sách với trạng thái <em>Vô hiệu</em>.</li>
+            <li>Bạn có thể kích hoạt lại bất kỳ lúc nào.</li>
+          </ul>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+          <button type="submit" class="btn btn-warning">Vô hiệu hóa</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endif %}
+{% endfor %}
 {% endblock %}

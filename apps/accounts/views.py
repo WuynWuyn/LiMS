@@ -206,6 +206,8 @@ def user_import_view(request):
                         role = 'admin'
                     elif 'librarian' in role_input or 'thủ thư' in role_input:
                         role = 'librarian'
+                    elif 'lecturer' in role_input or 'giảng viên' in role_input:
+                        role = 'lecturer'
 
                     if not CustomUser.objects.filter(username=username).exists():
                         user = CustomUser.objects.create_user(
@@ -227,7 +229,10 @@ def user_import_view(request):
                             except Exception:
                                 pass
                                 
-                messages.success(request, f'Đã import thành công {count} người dùng! Mật khẩu đã được tự động sinh và gửi qua email.')
+                if count > 0:
+                    messages.success(request, f'Đã import thành công {count} người dùng! Mật khẩu đã được tự động sinh và gửi qua email.')
+                else:
+                    messages.warning(request, 'Không có người dùng mới nào được thêm (các tài khoản trong file Excel đã tồn tại trong hệ thống).')
                 return redirect('accounts:user_list')
             except Exception as e:
                 messages.error(request, f'Lỗi khi đọc file: {str(e)}')
