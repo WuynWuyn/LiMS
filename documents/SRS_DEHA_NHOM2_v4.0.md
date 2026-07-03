@@ -950,48 +950,8 @@ Mỗi Use Case được đặc tả đầy đủ 11 trường chuẩn IIBA v3. B
 
 # 6. THIẾT KẾ DỮ LIỆU (DATABASE SCHEMA)
 
-```mermaid
-erDiagram
-    User ||--o{ BorrowRecord : makes
-    User ||--o{ BookRequest : submits
-    
-    Book ||--o{ BorrowRecord : "1 cuốn sách có thể mượn nhiều lần"
-    Category ||--o{ Book : categorizes
-    
-    User {
-        int id PK
-        string username
-        string role "Admin, Librarian, Reader"
-        boolean is_active
-    }
-    Book {
-        int id PK
-        string isbn "Định danh chuẩn quốc tế"
-        int category_id FK
-        string title
-        int available_quantity
-        string status
-    }
-    Category {
-        int id PK
-        string name
-    }
-    BorrowRecord {
-        int id PK
-        int user_id FK
-        int book_id FK
-        date borrow_date
-        date due_date
-        string status "Borrowing, Returned, Overdue, Reported Lost"
-    }
-    BookRequest {
-        int id PK
-        int user_id FK
-        string isbn "Cơ sở gom nhóm phê duyệt tự động"
-        string book_title
-        string status "Pending, Approved, Rejected"
-    }
-```
+
+
 
 # 7. KIẾN TRÚC KỸ THUẬT & RAG PIPELINE
 
